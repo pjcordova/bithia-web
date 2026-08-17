@@ -30,7 +30,12 @@ export function SeccionShopTheLook({ look }: { look: Look | null }) {
       <div className="mx-auto mt-10 grid max-w-6xl items-start gap-8 px-4 md:grid-cols-[1.4fr_1fr] md:gap-12">
         <FotoDelLook look={look} activo={indice} onElegir={setIndice} />
 
-        <div>
+        {/* Arranca más abajo que la foto del look, a propósito. El escalonado
+            evita que las dos columnas se lean como un bloque simétrico y deja
+            claro cuál manda: la de la izquierda es el conjunto, esta es el
+            vistazo a una prenda. Solo en desktop; apiladas no hay desfase que
+            hacer. */}
+        <div className="md:mt-24">
           {/* La key fuerza una instancia nueva al cambiar de prenda. Sin ella
               React reutiliza la misma y el color elegido queda pegado del
               ítem anterior: se tocaba otro punto y la tarjeta no cambiaba. */}
