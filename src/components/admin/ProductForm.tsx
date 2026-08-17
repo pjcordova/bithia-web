@@ -27,6 +27,7 @@ export type ProductoAdmin = {
   destacado: boolean;
   edicion_limitada: boolean;
   top_semana: boolean;
+  banner_inferior: boolean;
   imagenes: string[];
   material: string | null;
   referencia_modelo: string | null;
@@ -455,6 +456,13 @@ export function ProductForm({
             etiqueta="Top de la semana"
             ayuda="Protagoniza la seccion grande con galeria y medidas. Necesita foto. Si marcas otra prenda, esa reemplaza a la actual."
             defaultChecked={producto?.top_semana ?? false}
+          />
+
+          <Interruptor
+            name="banner_inferior"
+            etiqueta="Banda ancha inferior"
+            ayuda="Protagoniza la segunda banda a todo el ancho, debajo de Top de la semana. Necesita foto."
+            defaultChecked={producto?.banner_inferior ?? false}
           />
 
           <Interruptor

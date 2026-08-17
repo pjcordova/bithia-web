@@ -13,15 +13,21 @@ import { formatSoles } from "@/lib/format";
  */
 export function BannerEdicionLimitada({
   producto,
+  etiqueta = "Edición limitada",
+  fondo = "bg-rosa-suave/40",
+  className = "mt-16",
 }: {
   producto: ProductoPublico | null;
+  etiqueta?: string;
+  fondo?: string;
+  className?: string;
 }) {
   if (!producto?.imagen_url) return null;
 
   return (
     <section
-      className="mt-16 bg-rosa-suave/40"
-      aria-label={`Edición limitada: ${producto.nombre}`}
+      className={`${className} ${fondo}`}
+      aria-label={`${etiqueta}: ${producto.nombre}`}
     >
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr]">
         <Costado
@@ -30,9 +36,9 @@ export function BannerEdicionLimitada({
           posicion="left"
         />
 
-        <div className="flex flex-col items-center justify-center px-6 py-14 text-center md:px-12 md:py-24">
+        <div className="flex flex-col items-center justify-center px-6 py-14 text-center md:px-12 md:py-28">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-carbon-suave">
-            Edición limitada
+            {etiqueta}
           </p>
           <h2 className="mt-4 max-w-md text-2xl font-bold uppercase leading-tight tracking-[0.04em] text-carbon md:text-4xl">
             {producto.nombre}
@@ -85,9 +91,12 @@ function Costado({
   posicion: "left" | "right";
   soloDesktop?: boolean;
 }) {
+  // 38rem y no las 32 originales: el ancho ya estaba bien, pero la banda
+  // quedaba baja para lo ancha que es. En celular se mantiene en 18rem, que
+  // ahí la altura la manda el alto de pantalla y no la proporción.
   return (
     <div
-      className={`relative h-72 md:h-[32rem] ${soloDesktop ? "hidden md:block" : ""}`}
+      className={`relative h-72 md:h-[38rem] ${soloDesktop ? "hidden md:block" : ""}`}
       aria-hidden={alt === "" ? true : undefined}
     >
       <Image

@@ -20,6 +20,7 @@ export type ProductoPublico = {
   destacado: boolean;
   edicion_limitada: boolean;
   top_semana: boolean;
+  banner_inferior: boolean;
   created_at: Date;
   tallas: string[];
   /** Medidas de la prenda por talla. Vacío si no se cargaron. */
@@ -53,6 +54,7 @@ type ProductoConTallas = {
   destacado: boolean;
   edicion_limitada: boolean;
   top_semana: boolean;
+  banner_inferior: boolean;
   created_at: Date;
   tallas: MedidaTalla[];
 };
@@ -95,6 +97,7 @@ const seleccion = {
   destacado: true,
   edicion_limitada: true,
   top_semana: true,
+  banner_inferior: true,
   created_at: true,
   tallas: {
     select: {
@@ -192,6 +195,26 @@ export async function obtenerEdicionLimitada(): Promise<ProductoPublico | null> 
           visible_en_tienda: true,
           edicion_limitada: true,
           // Sin foto la banda no tiene sentido: es una pieza puramente visual.
+          imagen_url: { not: null },
+        },
+        select: seleccion,
+        orderBy: { created_at: "desc" },
+      });
+      return fila ? serializar(fila) : null;
+    },
+    null
+  );
+}
+
+/** Prenda protagonista de la segunda banda ancha. */
+export async function obtenerBannerInferior(): Promise<ProductoPublico | null> {
+  return leerSeguro(
+    "obtenerBannerInferior",
+    async () => {
+      const fila = await prisma.productos.findFirst({
+        where: {
+          visible_en_tienda: true,
+          banner_inferior: true,
           imagen_url: { not: null },
         },
         select: seleccion,

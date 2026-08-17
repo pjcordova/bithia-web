@@ -41,6 +41,7 @@ export default async function AdminPage() {
     destacado: p.destacado,
     edicion_limitada: p.edicion_limitada,
     top_semana: p.top_semana,
+    banner_inferior: p.banner_inferior,
     imagenes: p.imagenes,
     material: p.material,
     referencia_modelo: p.referencia_modelo,

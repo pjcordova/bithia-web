@@ -50,6 +50,8 @@ model productos {
   // Protagoniza la sección "Top de la semana". Igual que edicion_limitada,
   // gana la más reciente marcada.
   top_semana        Boolean  @default(false)
+  // Protagoniza la segunda banda ancha, debajo de "Top de la semana".
+  banner_inferior   Boolean  @default(false)
   created_at        DateTime @default(now()) @db.Timestamptz(6)
   tallas            tallas[]
 

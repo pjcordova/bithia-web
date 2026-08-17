@@ -15,6 +15,7 @@ import {
   listarCategoriasDestacadas,
   obtenerEdicionLimitada,
   obtenerTopSemana,
+  obtenerBannerInferior,
   listarDestacados,
   listarNovedades,
 } from "@/lib/productos";
@@ -24,13 +25,14 @@ import {
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const [novedades, destacados, categorias, edicionLimitada, topSemana] =
+  const [novedades, destacados, categorias, edicionLimitada, topSemana, bannerInferior] =
     await Promise.all([
     listarNovedades(4),
     listarDestacados(8),
     listarCategoriasDestacadas(),
     obtenerEdicionLimitada(),
       obtenerTopSemana(),
+      obtenerBannerInferior(),
     ]);
 
   return (
@@ -90,6 +92,13 @@ export default async function HomePage() {
         />
 
         <SeccionTopSemana producto={topSemana} />
+
+        <BannerEdicionLimitada
+          producto={bannerInferior}
+          etiqueta="Recién llegado"
+          fondo="bg-crema"
+          className="mt-20"
+        />
 
         <div className="mx-auto max-w-6xl px-4">
         <section className="mt-14 grid gap-4 md:grid-cols-2">
