@@ -22,6 +22,11 @@ model productos {
   // porque el punto solo no sirve: sin texto no hay nada que leer para un
   // lector de pantalla ni para quien no distingue colores.
   color_hex         String?
+  // Enlaza los colores de un mismo diseño. Las prendas que comparten este
+  // valor se muestran como puntos de color intercambiables entre sí.
+  // Es texto libre y no una tabla aparte porque cada colorway ya es un
+  // producto completo, con su foto, su precio y sus tallas propias.
+  grupo_variante    String?
   descripcion       String?
   precio_venta      Decimal  @db.Decimal(10, 2)
   // Foto de portada: la que sale en tarjetas, mosaicos y banda.
@@ -54,9 +59,43 @@ model productos {
   banner_inferior   Boolean  @default(false)
   created_at        DateTime @default(now()) @db.Timestamptz(6)
   tallas            tallas[]
+  look_items        look_items[]
 
   @@index([categoria])
   @@index([created_at])
+  @@index([grupo_variante])
+}
+
+// Un conjunto armado: la foto de la clienta con varias prendas puestas y los
+// productos que la componen. Cambia con cada carga de mercadería, así que vive
+// en la base y no en el código.
+model looks {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  titulo     String       @default("Shop the look")
+  // Texto vertical sobre la foto. Ej. "MIX&MATCH".
+  etiqueta   String?
+  imagen_url String
+  activo     Boolean      @default(true)
+  created_at DateTime     @default(now()) @db.Timestamptz(6)
+  items      look_items[]
+
+  @@index([activo, created_at])
+}
+
+model look_items {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  look_id     String    @db.Uuid
+  producto_id String    @db.Uuid
+  // Posición del punto sobre la foto, en % del ancho y del alto. Sin valores
+  // la prenda igual aparece en la lista de la derecha, solo que sin marcador.
+  pos_x       Int?
+  pos_y       Int?
+  orden       Int       @default(0)
+  looks       looks     @relation(fields: [look_id], references: [id], onDelete: Cascade)
+  productos   productos @relation(fields: [producto_id], references: [id], onDelete: Cascade)
+
+  @@unique([look_id, producto_id])
+  @@index([look_id, orden])
 }
 
 // Qué tallas existen para esta prenda. Sin cantidad: el stock exacto vive

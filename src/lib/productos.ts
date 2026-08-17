@@ -10,6 +10,8 @@ export type ProductoPublico = {
   categoria: string;
   color_principal: string;
   color_hex: string | null;
+  grupo_variante: string | null;
+  visible_en_tienda: boolean;
   descripcion: string | null;
   precio_venta: number;
   imagen_url: string | null;
@@ -44,6 +46,8 @@ type ProductoConTallas = {
   categoria: string;
   color_principal: string;
   color_hex: string | null;
+  grupo_variante: string | null;
+  visible_en_tienda: boolean;
   descripcion: string | null;
   precio_venta: { toNumber(): number };
   imagen_url: string | null;
@@ -87,6 +91,8 @@ const seleccion = {
   categoria: true,
   color_principal: true,
   color_hex: true,
+  grupo_variante: true,
+  visible_en_tienda: true,
   descripcion: true,
   precio_venta: true,
   imagen_url: true,
@@ -241,6 +247,85 @@ export async function obtenerTopSemana(): Promise<ProductoPublico | null> {
         orderBy: { created_at: "desc" },
       });
       return fila ? serializar(fila) : null;
+    },
+    null
+  );
+}
+
+/** Una prenda del look, con sus colorways hermanos y la foto de hover. */
+export type ItemLook = {
+  producto: ProductoPublico;
+  posX: number | null;
+  posY: number | null;
+  /** Todos los colores del mismo diseño, incluido el propio. */
+  variantes: ProductoPublico[];
+};
+
+export type Look = {
+  id: string;
+  titulo: string;
+  etiqueta: string | null;
+  imagen_url: string;
+  items: ItemLook[];
+};
+
+/**
+ * Look activo más reciente, con sus prendas y las variantes de color de cada
+ * una. Las variantes salen de grupo_variante: si una prenda no lo tiene, se
+ * devuelve sola y la tarjeta no muestra puntos de color.
+ */
+export async function obtenerLookActivo(): Promise<Look | null> {
+  return leerSeguro(
+    "obtenerLookActivo",
+    async () => {
+      const look = await prisma.looks.findFirst({
+        where: { activo: true },
+        orderBy: { created_at: "desc" },
+        include: {
+          items: {
+            orderBy: { orden: "asc" },
+            include: { productos: { select: seleccion } },
+          },
+        },
+      });
+      if (!look) return null;
+
+      // Solo prendas publicadas: una oculta no debe aparecer en el conjunto.
+      const items = look.items.filter((i) => i.productos.visible_en_tienda);
+      if (items.length === 0) return null;
+
+      // Una sola consulta para todos los grupos, en vez de una por prenda.
+      const grupos = [
+        ...new Set(
+          items
+            .map((i) => i.productos.grupo_variante)
+            .filter((g): g is string => Boolean(g))
+        ),
+      ];
+      const hermanas = grupos.length
+        ? await prisma.productos.findMany({
+            where: { visible_en_tienda: true, grupo_variante: { in: grupos } },
+            select: seleccion,
+            orderBy: { created_at: "asc" },
+          })
+        : [];
+
+      return {
+        id: look.id,
+        titulo: look.titulo,
+        etiqueta: look.etiqueta,
+        imagen_url: look.imagen_url,
+        items: items.map((i) => {
+          const producto = serializar(i.productos);
+          const grupo = i.productos.grupo_variante;
+          const variantes = grupo
+            ? hermanas
+                .filter((h) => h.grupo_variante === grupo)
+                .map(serializar)
+            : [producto];
+          return { producto, posX: i.pos_x, posY: i.pos_y, variantes };
+        }),
+      };
     },
     null
   );

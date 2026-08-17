@@ -9,6 +9,7 @@ import { SeccionCategorias } from "@/components/SeccionCategorias";
 import { BandaMarquesina } from "@/components/BandaMarquesina";
 import { BannerEdicionLimitada } from "@/components/BannerEdicionLimitada";
 import { SeccionTopSemana } from "@/components/SeccionTopSemana";
+import { SeccionShopTheLook } from "@/components/SeccionShopTheLook";
 import { MARQUESINA_SECUNDARIA } from "@/lib/contenido";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import {
@@ -16,6 +17,7 @@ import {
   obtenerEdicionLimitada,
   obtenerTopSemana,
   obtenerBannerInferior,
+  obtenerLookActivo,
   listarDestacados,
   listarNovedades,
 } from "@/lib/productos";
@@ -25,7 +27,7 @@ import {
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const [novedades, destacados, categorias, edicionLimitada, topSemana, bannerInferior] =
+  const [novedades, destacados, categorias, edicionLimitada, topSemana, bannerInferior, look] =
     await Promise.all([
     listarNovedades(4),
     listarDestacados(8),
@@ -33,6 +35,7 @@ export default async function HomePage() {
     obtenerEdicionLimitada(),
       obtenerTopSemana(),
       obtenerBannerInferior(),
+      obtenerLookActivo(),
     ]);
 
   return (
@@ -99,6 +102,8 @@ export default async function HomePage() {
           fondo="bg-crema"
           className="mt-20"
         />
+
+        <SeccionShopTheLook look={look} />
 
         <div className="mx-auto max-w-6xl px-4">
         <section className="mt-14 grid gap-4 md:grid-cols-2">
