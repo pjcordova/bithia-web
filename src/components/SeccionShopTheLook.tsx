@@ -74,17 +74,21 @@ function FotoDelLook({
         // Texto vertical corrido por el borde izquierdo, como en la referencia.
         <p
           aria-hidden
-          // text-center centra el texto sobre el eje vertical: en modo
-          // vertical-rl el eje de línea es el alto, así que la marca queda
-          // a media altura de la foto en vez de pegada arriba.
-          className="hidden shrink-0 select-none overflow-hidden text-center text-3xl font-extrabold uppercase leading-none tracking-tight text-carbon md:block lg:text-4xl xl:text-5xl"
+          // Sin text-align el texto se ancla al inicio del eje de línea que,
+          // con el rotate(180deg), cae abajo: la marca arranca en el pie de la
+          // foto y sube. Centrada perdía la lectura de abajo hacia arriba.
+          className="hidden shrink-0 select-none overflow-hidden text-3xl font-extrabold uppercase leading-none tracking-tight text-carbon md:block lg:text-4xl xl:text-5xl"
           style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
         >
           {look.etiqueta}
         </p>
       )}
 
-      <div className="relative aspect-[3/4] flex-1 overflow-hidden bg-rosa-suave/20">
+      {/* En desktop la altura se ata a la pantalla y no a la proporción: con
+          3/4 fijo la sección medía más que la ventana y no se alcanzaban a ver
+          las dos fotos a la vez al hacer scroll. El min-h evita que se aplaste
+          en ventanas muy bajas. */}
+      <div className="relative aspect-[3/4] flex-1 overflow-hidden bg-rosa-suave/20 md:aspect-auto md:h-[55vh] md:min-h-[380px]">
         <Image
           src={look.imagen_url}
           alt={look.titulo}
@@ -137,7 +141,7 @@ function TarjetaPrenda({ item }: { item: ItemLook }) {
     <div>
       <Link
         href={`/producto/${variante.id}`}
-        className="group relative block aspect-[3/4] overflow-hidden bg-rosa-suave/20"
+        className="group relative block aspect-[3/4] overflow-hidden bg-rosa-suave/20 md:aspect-auto md:h-[55vh] md:min-h-[380px]"
         onMouseEnter={() => setEncima(true)}
         onMouseLeave={() => setEncima(false)}
       >
