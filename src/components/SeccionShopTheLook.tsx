@@ -27,15 +27,17 @@ export function SeccionShopTheLook({ look }: { look: Look | null }) {
         {look.titulo}
       </h2>
 
-      <div className="mx-auto mt-10 grid max-w-6xl items-start gap-8 px-4 md:grid-cols-[1.4fr_1fr] md:gap-12">
+      {/* Sin items-start: las columnas se estiran a la altura de la fila, que
+          la define la de la derecha. Así la foto del look cubre todo el bloque
+          de compra, botón y puntos incluidos. */}
+      <div className="mx-auto mt-10 grid max-w-6xl gap-8 px-4 md:grid-cols-[1.4fr_1fr] md:gap-12">
         <FotoDelLook look={look} activo={indice} onElegir={setIndice} />
 
-        {/* Arranca más abajo que la foto del look, a propósito. El escalonado
-            evita que las dos columnas se lean como un bloque simétrico y deja
-            claro cuál manda: la de la izquierda es el conjunto, esta es el
-            vistazo a una prenda. Solo en desktop; apiladas no hay desfase que
-            hacer. */}
-        <div className="md:mt-24">
+        {/* El padding vertical es lo que hace que la foto de la izquierda
+            sobresalga por arriba y por abajo: la altura de la fila sale de esta
+            columna, así que este aire se traduce en el margen que le sobra al
+            look. Se centra dentro en vez de arrancar pegada arriba. */}
+        <div className="md:flex md:flex-col md:justify-center md:py-12">
           {/* La key fuerza una instancia nueva al cambiar de prenda. Sin ella
               React reutiliza la misma y el color elegido queda pegado del
               ítem anterior: se tocaba otro punto y la tarjeta no cambiaba. */}
@@ -74,7 +76,7 @@ function FotoDelLook({
   onElegir: (i: number) => void;
 }) {
   return (
-    <div className="relative flex">
+    <div className="relative flex md:h-full">
       {look.etiqueta && (
         // Texto vertical corrido por el borde izquierdo, como en la referencia.
         <p
@@ -89,11 +91,10 @@ function FotoDelLook({
         </p>
       )}
 
-      {/* Deliberadamente más alta que la tarjeta de la derecha: esta es la foto
-          del conjunto completo y manda en la sección; la otra es una prenda
-          suelta. La altura va atada a la ventana y no a la proporción, porque
-          con 3/4 fijo la sección no entraba en pantalla de laptop. */}
-      <div className="relative aspect-[3/4] flex-1 overflow-hidden bg-rosa-suave/20 md:aspect-auto md:h-[58vh] md:min-h-[400px]">
+      {/* Llena la altura de la fila en vez de fijar una proporción: así cubre
+          el bloque de compra completo, y sobresale por arriba y por abajo
+          gracias al padding de esa columna. */}
+      <div className="relative aspect-[3/4] flex-1 overflow-hidden bg-rosa-suave/20 md:aspect-auto md:h-full">
         <Image
           src={look.imagen_url}
           alt={look.titulo}
