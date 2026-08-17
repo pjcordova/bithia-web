@@ -35,6 +35,7 @@ type CamposProducto = {
   imagen_url: string | null;
   visible_en_tienda: boolean;
   disponible: boolean;
+  destacado: boolean;
   tallas: string[];
   codigoLoteManual: string;
 };
@@ -80,6 +81,7 @@ function leerCampos(formData: FormData): CamposProducto | string {
     imagen_url: imagen || null,
     visible_en_tienda: formData.get("visible_en_tienda") === "on",
     disponible: formData.get("disponible") === "on",
+    destacado: formData.get("destacado") === "on",
     tallas,
     codigoLoteManual,
   };

@@ -6,8 +6,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { HERO_INTERVALO_MS, SLIDES } from "@/lib/contenido";
 
-/** Id de la sección a la que baja la flecha inferior. */
-const DESTINO_FLECHA = "novedades";
+/**
+ * Destinos de la flecha, en orden de preferencia. "destacados" no se renderiza
+ * si la dueña todavía no marcó ninguna prenda, así que hay respaldo: la flecha
+ * nunca debe apuntar a una sección inexistente.
+ */
+const DESTINOS_FLECHA = ["destacados", "novedades"];
 
 export function Hero() {
   const [actual, setActual] = useState(0);
@@ -30,9 +34,13 @@ export function Hero() {
   }, [pausado, actual]);
 
   const bajar = useCallback(() => {
-    document
-      .getElementById(DESTINO_FLECHA)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    for (const id of DESTINOS_FLECHA) {
+      const destino = document.getElementById(id);
+      if (destino) {
+        destino.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+    }
   }, []);
 
   return (

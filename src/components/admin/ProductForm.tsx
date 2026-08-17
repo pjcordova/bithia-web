@@ -23,6 +23,7 @@ export type ProductoAdmin = {
   imagen_url: string | null;
   visible_en_tienda: boolean;
   disponible: boolean;
+  destacado: boolean;
   tallas: string[];
 };
 
@@ -321,6 +322,13 @@ export function ProductForm({
             etiqueta="Disponible"
             ayuda="Desactívalo para mostrar la prenda como “Agotado” sin ocultarla."
             defaultChecked={producto?.disponible ?? true}
+          />
+
+          <Interruptor
+            name="destacado"
+            etiqueta="Mostrar en “Los más pedidos”"
+            ayuda="Aparece en la fila destacada de la portada. Márcalo en las prendas que más te piden por WhatsApp — no se calcula solo, tú decides cuáles son."
+            defaultChecked={producto?.destacado ?? false}
           />
 
           <Interruptor

@@ -4,21 +4,27 @@ import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
+import { SeccionDestacados } from "@/components/SeccionDestacados";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
-import { listarNovedades } from "@/lib/productos";
+import { listarDestacados, listarNovedades } from "@/lib/productos";
 
 // El catálogo cambia cada ~15 días; revalidar cada hora evita golpear Neon en
 // cada visita sin que la dueña tenga que esperar un despliegue.
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const novedades = await listarNovedades(4);
+  const [novedades, destacados] = await Promise.all([
+    listarNovedades(4),
+    listarDestacados(8),
+  ]);
 
   return (
     <>
       <Header />
       <main className="mx-auto max-w-6xl px-4 pb-4">
         <Hero />
+
+        <SeccionDestacados id="destacados" productos={destacados} />
 
         <section id="novedades" className="mt-20 scroll-mt-24">
           <h2 className="text-xl font-semibold uppercase tracking-[0.1em] text-carbon">

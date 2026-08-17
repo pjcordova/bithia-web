@@ -12,6 +12,7 @@ export type ProductoPublico = {
   precio_venta: number;
   imagen_url: string | null;
   disponible: boolean;
+  destacado: boolean;
   created_at: Date;
   tallas: string[];
 };
@@ -26,6 +27,7 @@ type ProductoConTallas = {
   precio_venta: { toNumber(): number };
   imagen_url: string | null;
   disponible: boolean;
+  destacado: boolean;
   created_at: Date;
   tallas: { talla: string }[];
 };
@@ -52,6 +54,7 @@ const seleccion = {
   precio_venta: true,
   imagen_url: true,
   disponible: true,
+  destacado: true,
   created_at: true,
   tallas: { select: { talla: true } },
 } as const;
@@ -97,6 +100,26 @@ export async function listarNovedades(limite = 4): Promise<ProductoPublico[]> {
     async () => {
       const filas = await prisma.productos.findMany({
         where: { visible_en_tienda: true },
+        select: seleccion,
+        orderBy: { created_at: "desc" },
+        take: limite,
+      });
+      return filas.map(serializar);
+    },
+    []
+  );
+}
+
+/**
+ * "Los más pedidos" de la portada. Se ordena por marcado manual, no por
+ * ventas: sin tabla de pedidos no hay nada que contar.
+ */
+export async function listarDestacados(limite = 8): Promise<ProductoPublico[]> {
+  return leerSeguro(
+    "listarDestacados",
+    async () => {
+      const filas = await prisma.productos.findMany({
+        where: { visible_en_tienda: true, destacado: true },
         select: seleccion,
         orderBy: { created_at: "desc" },
         take: limite,

@@ -27,6 +27,7 @@ export default async function AdminPage() {
     imagen_url: p.imagen_url,
     visible_en_tienda: p.visible_en_tienda,
     disponible: p.disponible,
+    destacado: p.destacado,
     tallas: p.tallas.map((t) => t.talla),
   }));
 

@@ -26,6 +26,10 @@ model productos {
   // "Disponible / Agotado". La dueña lo marca a criterio propio — no hay
   // sincronización de stock con el ERP, es deliberado.
   disponible        Boolean  @default(true)
+  // Aparece en "Los más pedidos" de la portada. No se calcula: no hay tabla de
+  // pedidos que contar. Lo marca la dueña, que atiende cada pedido por
+  // WhatsApp y sabe mejor que nadie qué sale más.
+  destacado         Boolean  @default(false)
   created_at        DateTime @default(now()) @db.Timestamptz(6)
   tallas            tallas[]
 

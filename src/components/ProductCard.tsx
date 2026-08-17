@@ -29,16 +29,22 @@ export function ProductCard({ producto }: { producto: ProductoPublico }) {
           </div>
         )}
 
-        {agotado && (
-          <span className="absolute left-2 top-2 rounded-md bg-carbon/80 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
-            Agotado
-          </span>
-        )}
-        {nueva && (
-          <span className="absolute left-2 top-2 rounded-md bg-terracota px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
-            Nuevo
-          </span>
-        )}
+        {/* Se apilan arriba a la izquierda, como en las tiendas de referencia.
+            "Agotado" manda: si no hay stock, lo demás sobra. */}
+        <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
+          {agotado ? (
+            <Etiqueta className="bg-carbon/80">Agotado</Etiqueta>
+          ) : (
+            <>
+              {producto.destacado && (
+                <Etiqueta className="bg-white text-carbon">
+                  Más pedido
+                </Etiqueta>
+              )}
+              {nueva && <Etiqueta className="bg-terracota">Nuevo</Etiqueta>}
+            </>
+          )}
+        </div>
       </div>
 
       <div className="p-3">
@@ -60,5 +66,21 @@ export function ProductCard({ producto }: { producto: ProductoPublico }) {
         </p>
       </div>
     </Link>
+  );
+}
+
+function Etiqueta({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <span
+      className={`px-2 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-white ${className}`}
+    >
+      {children}
+    </span>
   );
 }

@@ -129,6 +129,11 @@ export function AdminDashboard({ productos }: { productos: ProductoAdmin[] }) {
                     </span>
                   </p>
                   <div className="flex gap-1.5">
+                    {p.destacado && (
+                      <span className="rounded-md bg-terracota/15 px-2 py-1 text-[10px] font-bold uppercase text-terracota-oscuro">
+                        Más pedido
+                      </span>
+                    )}
                     {!p.visible_en_tienda && (
                       <span className="rounded-md bg-linea px-2 py-1 text-[10px] font-bold uppercase text-carbon-suave">
                         Oculto
