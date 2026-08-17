@@ -47,22 +47,18 @@ export default async function HomePage() {
 
         <div className="mx-auto max-w-6xl px-4">
         <section id="novedades" className="mt-20 scroll-mt-24">
-          <h2 className="text-xl font-semibold uppercase tracking-[0.1em] text-carbon">
+          {/* Mismo tratamiento que "Los más pedidos": centrado, mayúsculas y
+              tracking amplio, para que las dos secciones se lean como pares. */}
+          <h2 className="text-center text-xl font-semibold uppercase tracking-[0.25em] text-carbon md:text-2xl">
             Nuevos ingresos
           </h2>
-          <p className="mt-1 text-sm text-carbon-suave">
-            Selección exclusiva para{" "}
-            <Link href="/catalogo" className="text-terracota underline">
-              ti
-            </Link>
-          </p>
 
           {novedades.length === 0 ? (
             <p className="mt-6 rounded-tarjeta bg-white p-6 text-center text-sm text-carbon-suave sombra-tarjeta">
               Todavía no hay prendas publicadas. Vuelve pronto.
             </p>
           ) : (
-            <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
               {novedades.map((p) => (
                 <ProductCard key={p.id} producto={p} />
               ))}

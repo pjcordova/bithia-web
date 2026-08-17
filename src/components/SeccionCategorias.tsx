@@ -17,7 +17,10 @@ export function SeccionCategorias({
   return (
     <section className="mt-16" aria-label="Comprar por categoría">
       <h2 className="sr-only">Comprar por categoría</h2>
-      <div className="grid grid-cols-2 gap-px bg-linea md:grid-cols-4">
+      {/* Ancho completo pero con aire a los costados: el mismo px del contenedor
+          se aplica a izquierda y derecha, así el primer y el último mosaico
+          quedan a igual distancia del borde. El gap separa las tarjetas. */}
+      <div className="grid grid-cols-2 gap-3 px-3 md:grid-cols-4 md:gap-5 md:px-5">
         {categorias.slice(0, 4).map((c) => (
           <Link
             key={c.nombre}
