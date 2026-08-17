@@ -42,7 +42,7 @@ export default async function HomePage() {
   return (
     <>
       <Header />
-      <main className="pb-4">
+      <main>
         {/* Hero, mosaicos y banda van a sangre completa: el ancho máximo se
             aplica por sección, no al <main>, para que la foto de portada
             llegue a los dos bordes también en desktop. */}

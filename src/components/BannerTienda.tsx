@@ -11,7 +11,10 @@ import { TIENDA } from "@/lib/contenido";
 export function BannerTienda() {
   return (
     <section className="relative mt-20" aria-label="Nuestra tienda">
-      <div className="relative h-[26rem] w-full overflow-hidden md:h-[34rem]">
+      {/* 38rem es la misma altura que las bandas de edición limitada y recién
+          llegado, para que las tres piezas anchas de la portada se lean como
+          una familia y no como tres tamaños sueltos. */}
+      <div className="relative h-[26rem] w-full overflow-hidden md:h-[38rem]">
         <Image
           src={TIENDA.foto}
           alt={`Stand de Bithia Brand en ${TIENDA.nombre}, ${TIENDA.ciudad}`}

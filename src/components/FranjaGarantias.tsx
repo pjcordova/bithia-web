@@ -10,10 +10,13 @@ const ICONOS = {
 
 /** Franja oscura con los cuatro argumentos de compra, bajo la foto del local. */
 export function FranjaGarantias() {
-  // El margen superior despega la franja de la foto del local: pegadas, la
-  // banda oscura se leía como el borde inferior de la imagen.
+  // Márgenes iguales arriba y abajo: la franja queda como una pieza suelta
+  // entre la foto del local y el pie, en vez de pegada a cualquiera de los dos.
   return (
-    <section className="mt-16 bg-carbon py-12" aria-label="Cómo compras en Bithia">
+    <section
+      className="my-16 bg-carbon py-12"
+      aria-label="Cómo compras en Bithia"
+    >
       <h2 className="sr-only">Cómo compras en Bithia</h2>
       <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-4 md:grid-cols-4 md:gap-6">
         {GARANTIAS.map((g) => {
