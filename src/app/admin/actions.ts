@@ -9,6 +9,20 @@ import { esCodigoLoteValido, generarCodigoLote } from "@/lib/codigo-lote";
 
 export type ProductoState = { error?: string; ok?: boolean };
 
+type TallaConMedidas = {
+  talla: string;
+  busto_cm: number | null;
+  cintura_cm: number | null;
+  cadera_cm: number | null;
+  largo_cm: number | null;
+};
+
+/** Un cm suelto o vacio no invalida el guardado: las medidas son opcionales. */
+function leerCm(formData: FormData, talla: string, campo: string): number | null {
+  const n = Number.parseInt(String(formData.get(`medida_${talla}_${campo}`) ?? ""), 10);
+  return Number.isFinite(n) && n > 0 && n < 400 ? n : null;
+}
+
 /**
  * El middleware ya bloquea /admin, pero las Server Actions se invocan por POST
  * directo y no pasan por él. Cada acción revalida la sesión por su cuenta.
@@ -38,7 +52,10 @@ type CamposProducto = {
   disponible: boolean;
   destacado: boolean;
   edicion_limitada: boolean;
-  tallas: string[];
+  top_semana: boolean;
+  imagenes: string[];
+  referencia_modelo: string | null;
+  tallas: TallaConMedidas[];
   codigoLoteManual: string;
 };
 
@@ -64,12 +81,26 @@ function leerCampos(formData: FormData): CamposProducto | string {
     return "El precio debe ser un número mayor que cero.";
   }
 
-  const tallas = TALLAS.filter((t) => formData.get(`talla_${t}`) === "on");
+  const tallas: TallaConMedidas[] = TALLAS.filter(
+    (t) => formData.get(`talla_${t}`) === "on"
+  ).map((talla) => ({
+    talla,
+    busto_cm: leerCm(formData, talla, "busto"),
+    cintura_cm: leerCm(formData, talla, "cintura"),
+    cadera_cm: leerCm(formData, talla, "cadera"),
+    largo_cm: leerCm(formData, talla, "largo"),
+  }));
   if (tallas.length === 0) return "Marca al menos una talla.";
 
   if (codigoLoteManual && !esCodigoLoteValido(codigoLoteManual)) {
     return "El código de lote debe tener el formato VES-2508-03.";
   }
+
+  // Las adicionales llegan como una lista separada por saltos de linea.
+  const extras = String(formData.get("imagenes") ?? "")
+    .split(/[\n,]+/)
+    .map((u) => u.trim())
+    .filter((u) => u.startsWith("https://res.cloudinary.com/"));
 
   if (imagen && !imagen.startsWith("https://res.cloudinary.com/")) {
     return "La foto no se subió correctamente. Intenta de nuevo.";
@@ -88,6 +119,9 @@ function leerCampos(formData: FormData): CamposProducto | string {
     disponible: formData.get("disponible") === "on",
     destacado: formData.get("destacado") === "on",
     edicion_limitada: formData.get("edicion_limitada") === "on",
+    top_semana: formData.get("top_semana") === "on",
+    imagenes: extras,
+    referencia_modelo: String(formData.get("referencia_modelo") ?? "").trim() || null,
     tallas,
     codigoLoteManual,
   };
@@ -110,7 +144,7 @@ export async function crearProducto(
       data: {
         ...datos,
         codigo_lote,
-        tallas: { create: tallas.map((talla) => ({ talla })) },
+        tallas: { create: tallas },
       },
     });
   } catch (e) {
@@ -148,7 +182,7 @@ export async function actualizarProducto(
         data: {
           ...datos,
           ...(codigoLoteManual ? { codigo_lote: codigoLoteManual } : {}),
-          tallas: { create: tallas.map((talla) => ({ talla })) },
+          tallas: { create: tallas },
         },
       }),
     ]);

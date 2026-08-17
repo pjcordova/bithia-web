@@ -20,6 +20,13 @@ export const ANUNCIOS = [
 /** Mensaje de la banda que desfila bajo las categorías. */
 export const MARQUESINA = "Mercadería nueva cada 15 días";
 
+/**
+ * Segunda banda, sobre "Top de la semana". Habla de la prenda destacada, no de
+ * descuentos: Bithia no maneja campañas de rebaja como las tiendas grandes, y
+ * anunciar una que no existe se nota al primer clic.
+ */
+export const MARQUESINA_SECUNDARIA = "Pocas unidades por modelo";
+
 export type Slide = {
   /** Foto de fondo. Sin imagen se usa el degradado cálido de marca. */
   imagen?: string;

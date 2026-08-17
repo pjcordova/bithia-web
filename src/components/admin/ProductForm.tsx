@@ -26,7 +26,17 @@ export type ProductoAdmin = {
   disponible: boolean;
   destacado: boolean;
   edicion_limitada: boolean;
+  top_semana: boolean;
+  imagenes: string[];
+  referencia_modelo: string | null;
   tallas: string[];
+  medidas: {
+    talla: string;
+    busto_cm: number | null;
+    cintura_cm: number | null;
+    cadera_cm: number | null;
+    largo_cm: number | null;
+  }[];
 };
 
 function BotonGuardar({ subiendo }: { subiendo: boolean }) {
@@ -332,6 +342,78 @@ export function ProductForm({
             </div>
           </fieldset>
 
+          <details className="mt-6 rounded-lg border border-linea bg-crema p-4">
+            <summary className="cursor-pointer text-[11px] font-bold uppercase tracking-wide text-terracota-oscuro">
+              Medidas de la prenda (opcional)
+            </summary>
+            <p className="mt-2 text-xs leading-relaxed text-carbon-suave">
+              En centímetros, con la prenda extendida sobre la mesa — no del
+              cuerpo. Se muestran en la ficha cuando la clienta elige esa talla.
+              Deja vacío lo que no midas.
+            </p>
+            <div className="mt-4 space-y-4">
+              {TALLAS.map((t) => (
+                <div key={t}>
+                  <p className="text-xs font-semibold text-carbon">Talla {t}</p>
+                  <div className="mt-2 grid grid-cols-4 gap-2">
+                    {(["busto", "cintura", "cadera", "largo"] as const).map(
+                      (campo) => {
+                        const m = producto?.medidas?.find((x) => x.talla === t);
+                        const valor = m?.[`${campo}_cm` as const];
+                        return (
+                          <label key={campo} className="block">
+                            <span className="block text-[10px] capitalize text-carbon-suave">
+                              {campo}
+                            </span>
+                            <input
+                              type="number"
+                              min="1"
+                              max="399"
+                              name={`medida_${t}_${campo}`}
+                              defaultValue={valor ?? ""}
+                              placeholder="cm"
+                              className="mt-1 w-full rounded-md border border-linea bg-white px-2 py-1.5 text-sm text-carbon focus:border-terracota focus:outline-none"
+                            />
+                          </label>
+                        );
+                      }
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </details>
+
+          <Campo
+            etiqueta="Referencia de la modelo"
+            htmlFor="referencia_modelo"
+            ayuda="Da escala a las medidas. Ej: La modelo mide 1.68 m (busto 84, cintura 64, cadera 90) y usa talla S."
+          >
+            <textarea
+              id="referencia_modelo"
+              name="referencia_modelo"
+              rows={2}
+              defaultValue={producto?.referencia_modelo ?? ""}
+              placeholder="La modelo mide 1.68 m y usa talla S."
+              className={`${ENTRADA} resize-y`}
+            />
+          </Campo>
+
+          <Campo
+            etiqueta="Fotos adicionales"
+            htmlFor="imagenes"
+            ayuda="Una URL de Cloudinary por línea. Se usan en la galería de “Top de la semana”; la foto de arriba siempre va primera."
+          >
+            <textarea
+              id="imagenes"
+              name="imagenes"
+              rows={3}
+              defaultValue={(producto?.imagenes ?? []).join("\n")}
+              placeholder="https://res.cloudinary.com/..."
+              className={`${ENTRADA} resize-y font-mono text-xs`}
+            />
+          </Campo>
+
           <Interruptor
             name="disponible"
             etiqueta="Disponible"
@@ -351,6 +433,13 @@ export function ProductForm({
             etiqueta="Edición limitada (banda de portada)"
             ayuda="Protagoniza la banda grande de la portada. Necesita foto. Si marcas otra prenda, esa reemplaza a la actual."
             defaultChecked={producto?.edicion_limitada ?? false}
+          />
+
+          <Interruptor
+            name="top_semana"
+            etiqueta="Top de la semana"
+            ayuda="Protagoniza la seccion grande con galeria y medidas. Necesita foto. Si marcas otra prenda, esa reemplaza a la actual."
+            defaultChecked={producto?.top_semana ?? false}
           />
 
           <Interruptor

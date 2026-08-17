@@ -8,10 +8,13 @@ import { SeccionDestacados } from "@/components/SeccionDestacados";
 import { SeccionCategorias } from "@/components/SeccionCategorias";
 import { BandaMarquesina } from "@/components/BandaMarquesina";
 import { BannerEdicionLimitada } from "@/components/BannerEdicionLimitada";
+import { SeccionTopSemana } from "@/components/SeccionTopSemana";
+import { MARQUESINA_SECUNDARIA } from "@/lib/contenido";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import {
   listarCategoriasDestacadas,
   obtenerEdicionLimitada,
+  obtenerTopSemana,
   listarDestacados,
   listarNovedades,
 } from "@/lib/productos";
@@ -21,12 +24,14 @@ import {
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const [novedades, destacados, categorias, edicionLimitada] = await Promise.all([
+  const [novedades, destacados, categorias, edicionLimitada, topSemana] =
+    await Promise.all([
     listarNovedades(4),
     listarDestacados(8),
     listarCategoriasDestacadas(),
     obtenerEdicionLimitada(),
-  ]);
+      obtenerTopSemana(),
+    ]);
 
   return (
     <>
@@ -77,6 +82,14 @@ export default async function HomePage() {
         </div>
 
         <BannerEdicionLimitada producto={edicionLimitada} />
+
+        <BandaMarquesina
+          mensaje={MARQUESINA_SECUNDARIA}
+          tono="terracota"
+          className="mt-0"
+        />
+
+        <SeccionTopSemana producto={topSemana} />
 
         <div className="mx-auto max-w-6xl px-4">
         <section className="mt-14 grid gap-4 md:grid-cols-2">

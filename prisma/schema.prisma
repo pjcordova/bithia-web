@@ -24,7 +24,14 @@ model productos {
   color_hex         String?
   descripcion       String?
   precio_venta      Decimal  @db.Decimal(10, 2)
+  // Foto de portada: la que sale en tarjetas, mosaicos y banda.
   imagen_url        String?
+  // Fotos adicionales para la galería de la ficha. La galería completa es
+  // [imagen_url, ...imagenes], así la portada siempre va primero.
+  imagenes          String[] @default([])
+  // Ej. "Antonia mide 1.73 m (busto 85, cintura 62, cadera 87) y usa talla S".
+  // Da escala: sin un cuerpo de referencia, las medidas en cm no dicen nada.
+  referencia_modelo String?
   // Toggle manual del panel: oculta la prenda de la web sin borrar sus datos.
   visible_en_tienda Boolean  @default(true)
   // "Disponible / Agotado". La dueña lo marca a criterio propio — no hay
@@ -37,6 +44,9 @@ model productos {
   // Protagoniza la banda de "Edición limitada" de la portada. Se muestra la
   // más reciente marcada, así que dejar varias encendidas no rompe nada.
   edicion_limitada  Boolean  @default(false)
+  // Protagoniza la sección "Top de la semana". Igual que edicion_limitada,
+  // gana la más reciente marcada.
+  top_semana        Boolean  @default(false)
   created_at        DateTime @default(now()) @db.Timestamptz(6)
   tallas            tallas[]
 
@@ -50,6 +60,14 @@ model tallas {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   producto_id String    @db.Uuid
   talla       String
+  // Medidas de LA PRENDA en cm, no del cuerpo. Son referenciales y opcionales:
+  // si no se cargan, la ficha simplemente no las muestra. Van en tallas y no
+  // en productos porque cambian con cada talla, que es justo el dato que la
+  // clienta necesita para decidir.
+  busto_cm    Int?
+  cintura_cm  Int?
+  cadera_cm   Int?
+  largo_cm    Int?
   productos   productos @relation(fields: [producto_id], references: [id], onDelete: Cascade)
 
   @@unique([producto_id, talla])

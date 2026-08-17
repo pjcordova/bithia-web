@@ -13,11 +13,26 @@ export type ProductoPublico = {
   descripcion: string | null;
   precio_venta: number;
   imagen_url: string | null;
+  imagenes: string[];
+  referencia_modelo: string | null;
   disponible: boolean;
   destacado: boolean;
   edicion_limitada: boolean;
+  top_semana: boolean;
   created_at: Date;
   tallas: string[];
+  /** Medidas de la prenda por talla. Vacío si no se cargaron. */
+  medidas: MedidaTalla[];
+  /** Portada + adicionales, sin huecos. */
+  galeria: string[];
+};
+
+export type MedidaTalla = {
+  talla: string;
+  busto_cm: number | null;
+  cintura_cm: number | null;
+  cadera_cm: number | null;
+  largo_cm: number | null;
 };
 
 type ProductoConTallas = {
@@ -30,22 +45,34 @@ type ProductoConTallas = {
   descripcion: string | null;
   precio_venta: { toNumber(): number };
   imagen_url: string | null;
+  imagenes: string[];
+  referencia_modelo: string | null;
   disponible: boolean;
   destacado: boolean;
   edicion_limitada: boolean;
+  top_semana: boolean;
   created_at: Date;
-  tallas: { talla: string }[];
+  tallas: MedidaTalla[];
 };
 
 const ORDEN_TALLA = ["S", "M", "L"];
 
 function serializar(p: ProductoConTallas): ProductoPublico {
+  const porOrden = (a: { talla: string }, b: { talla: string }) =>
+    ORDEN_TALLA.indexOf(a.talla) - ORDEN_TALLA.indexOf(b.talla);
+
+  const medidas = [...p.tallas].sort(porOrden);
+
   return {
     ...p,
     precio_venta: p.precio_venta.toNumber(),
-    tallas: p.tallas
-      .map((t) => t.talla)
-      .sort((a, b) => ORDEN_TALLA.indexOf(a) - ORDEN_TALLA.indexOf(b)),
+    tallas: medidas.map((t) => t.talla),
+    medidas,
+    // La portada va primero y se descartan huecos: una galería con un null en
+    // el medio rompería la navegación del deslizable.
+    galeria: [p.imagen_url, ...p.imagenes].filter(
+      (u): u is string => typeof u === "string" && u.length > 0
+    ),
   };
 }
 
@@ -59,11 +86,22 @@ const seleccion = {
   descripcion: true,
   precio_venta: true,
   imagen_url: true,
+  imagenes: true,
+  referencia_modelo: true,
   disponible: true,
   destacado: true,
   edicion_limitada: true,
+  top_semana: true,
   created_at: true,
-  tallas: { select: { talla: true } },
+  tallas: {
+    select: {
+      talla: true,
+      busto_cm: true,
+      cintura_cm: true,
+      cadera_cm: true,
+      largo_cm: true,
+    },
+  },
 } as const;
 
 /**
@@ -151,6 +189,26 @@ export async function obtenerEdicionLimitada(): Promise<ProductoPublico | null> 
           visible_en_tienda: true,
           edicion_limitada: true,
           // Sin foto la banda no tiene sentido: es una pieza puramente visual.
+          imagen_url: { not: null },
+        },
+        select: seleccion,
+        orderBy: { created_at: "desc" },
+      });
+      return fila ? serializar(fila) : null;
+    },
+    null
+  );
+}
+
+/** Prenda protagonista de "Top de la semana". Gana la más reciente marcada. */
+export async function obtenerTopSemana(): Promise<ProductoPublico | null> {
+  return leerSeguro(
+    "obtenerTopSemana",
+    async () => {
+      const fila = await prisma.productos.findFirst({
+        where: {
+          visible_en_tienda: true,
+          top_semana: true,
           imagen_url: { not: null },
         },
         select: seleccion,
