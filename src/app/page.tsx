@@ -104,7 +104,9 @@ export default async function HomePage() {
           className="mt-20"
         />
 
-        <BandaMarquesina mensaje={MARQUESINA_TERCERA} className="mt-20" />
+        {/* Pegada a la banda de arriba, igual que la marquesina de edición
+            limitada: la banda ancha y su mensaje se leen como una sola pieza. */}
+        <BandaMarquesina mensaje={MARQUESINA_TERCERA} className="mt-0" />
 
         <SeccionShopTheLook look={look} />
 

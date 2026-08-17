@@ -74,7 +74,10 @@ function FotoDelLook({
         // Texto vertical corrido por el borde izquierdo, como en la referencia.
         <p
           aria-hidden
-          className="hidden shrink-0 select-none overflow-hidden text-5xl font-extrabold uppercase leading-none tracking-tight text-carbon md:block lg:text-7xl xl:text-8xl"
+          // text-center centra el texto sobre el eje vertical: en modo
+          // vertical-rl el eje de línea es el alto, así que la marca queda
+          // a media altura de la foto en vez de pegada arriba.
+          className="hidden shrink-0 select-none overflow-hidden text-center text-3xl font-extrabold uppercase leading-none tracking-tight text-carbon md:block lg:text-4xl xl:text-5xl"
           style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
         >
           {look.etiqueta}
