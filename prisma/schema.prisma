@@ -71,9 +71,10 @@ model productos {
 // en la base y no en el código.
 model looks {
   id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  titulo     String       @default("Shop the look")
-  // Texto vertical sobre la foto. Ej. "MIX&MATCH".
-  etiqueta   String?
+  titulo     String       @default("Chic Style")
+  // Marca de agua vertical al costado de la foto. Es la firma de la casa, no
+  // una consigna de campaña: por eso el nombre de la marca y no un lema.
+  etiqueta   String?      @default("Bithia-Brand")
   imagen_url String
   activo     Boolean      @default(true)
   created_at DateTime     @default(now()) @db.Timestamptz(6)

@@ -74,7 +74,7 @@ function FotoDelLook({
         // Texto vertical corrido por el borde izquierdo, como en la referencia.
         <p
           aria-hidden
-          className="hidden shrink-0 select-none text-4xl font-extrabold uppercase leading-none tracking-tight text-carbon md:block lg:text-5xl"
+          className="hidden shrink-0 select-none overflow-hidden text-5xl font-extrabold uppercase leading-none tracking-tight text-carbon md:block lg:text-7xl xl:text-8xl"
           style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
         >
           {look.etiqueta}
