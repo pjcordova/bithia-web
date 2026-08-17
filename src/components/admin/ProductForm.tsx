@@ -28,6 +28,7 @@ export type ProductoAdmin = {
   edicion_limitada: boolean;
   top_semana: boolean;
   imagenes: string[];
+  material: string | null;
   referencia_modelo: string | null;
   tallas: string[];
   medidas: {
@@ -383,6 +384,20 @@ export function ProductForm({
               ))}
             </div>
           </details>
+
+          <Campo
+            etiqueta="Material"
+            htmlFor="material"
+            ayuda="Composicion de la tela. Ej: Lino 70%, viscosa 30%. Es de lo que mas preguntan por WhatsApp."
+          >
+            <input
+              id="material"
+              name="material"
+              defaultValue={producto?.material ?? ""}
+              placeholder="Ej. Lino 70%, viscosa 30%"
+              className={ENTRADA}
+            />
+          </Campo>
 
           <Campo
             etiqueta="Referencia de la modelo"

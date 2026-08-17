@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ProductoPublico } from "@/lib/productos";
 import { esNueva, formatSoles } from "@/lib/format";
-import { esColorClaro, resolverColor } from "@/lib/colores";
+import { PuntoColor } from "@/components/PuntoColor";
 
 export function ProductCard({ producto }: { producto: ProductoPublico }) {
   const agotado = !producto.disponible;
@@ -70,34 +70,6 @@ export function ProductCard({ producto }: { producto: ProductoPublico }) {
         </div>
       </div>
     </Link>
-  );
-}
-
-/**
- * Punto de color de la prenda. Si no se puede resolver un color confiable se
- * muestra el nombre escrito: mejor la palabra que un círculo inventado.
- *
- * El nombre viaja siempre en title y en texto para lector de pantalla — un
- * punto a secas no comunica nada a quien no ve o no distingue colores.
- */
-function PuntoColor({ nombre, hex }: { nombre: string; hex: string | null }) {
-  const color = resolverColor(nombre, hex);
-
-  if (!color) {
-    return <p className="text-[11px] text-carbon-suave">{nombre}</p>;
-  }
-
-  return (
-    <span className="flex items-center gap-1.5" title={nombre}>
-      <span
-        aria-hidden
-        className={`inline-block h-3.5 w-3.5 rounded-full ${
-          esColorClaro(color) ? "ring-1 ring-linea" : ""
-        }`}
-        style={{ backgroundColor: color }}
-      />
-      <span className="sr-only">Color: {nombre}</span>
-    </span>
   );
 }
 

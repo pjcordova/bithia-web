@@ -42,6 +42,7 @@ export default async function AdminPage() {
     edicion_limitada: p.edicion_limitada,
     top_semana: p.top_semana,
     imagenes: p.imagenes,
+    material: p.material,
     referencia_modelo: p.referencia_modelo,
     tallas: p.tallas.map((t) => t.talla),
     medidas: p.tallas.map((t) => ({

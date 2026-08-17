@@ -54,6 +54,7 @@ type CamposProducto = {
   edicion_limitada: boolean;
   top_semana: boolean;
   imagenes: string[];
+  material: string | null;
   referencia_modelo: string | null;
   tallas: TallaConMedidas[];
   codigoLoteManual: string;
@@ -121,6 +122,7 @@ function leerCampos(formData: FormData): CamposProducto | string {
     edicion_limitada: formData.get("edicion_limitada") === "on",
     top_semana: formData.get("top_semana") === "on",
     imagenes: extras,
+    material: String(formData.get("material") ?? "").trim() || null,
     referencia_modelo: String(formData.get("referencia_modelo") ?? "").trim() || null,
     tallas,
     codigoLoteManual,

@@ -8,6 +8,7 @@ import type { ProductoPublico } from "@/lib/productos";
 import { useCart } from "@/lib/cart-store";
 import { formatSoles } from "@/lib/format";
 import { TALLAS } from "@/lib/categorias";
+import { PuntoColor } from "@/components/PuntoColor";
 
 /**
  * Prenda destacada de la semana: galería deslizable a la izquierda y compra a
@@ -154,7 +155,19 @@ export function SeccionTopSemana({
             {formatSoles(producto.precio_venta)}
           </p>
 
-          <p className="mt-8 text-sm text-carbon">Talla:</p>
+          <div className="mt-6">
+            <p className="text-sm text-carbon">Color:</p>
+            <div className="mt-2">
+              <PuntoColor
+                nombre={producto.color_principal}
+                hex={producto.color_hex}
+                conNombre
+                tamano="md"
+              />
+            </div>
+          </div>
+
+          <p className="mt-6 text-sm text-carbon">Talla:</p>
           <div className="mt-3 flex gap-2">
             {TALLAS.map((t) => {
               const existe = producto.tallas.includes(t);
@@ -229,6 +242,13 @@ export function SeccionTopSemana({
                 {producto.descripcion}
               </p>
             </div>
+          )}
+
+          {producto.material && (
+            <p className="mt-4 text-sm leading-relaxed text-carbon-suave">
+              <span className="font-semibold text-carbon">Material: </span>
+              {producto.material}
+            </p>
           )}
 
           {producto.referencia_modelo && (

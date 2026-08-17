@@ -14,6 +14,7 @@ export type ProductoPublico = {
   precio_venta: number;
   imagen_url: string | null;
   imagenes: string[];
+  material: string | null;
   referencia_modelo: string | null;
   disponible: boolean;
   destacado: boolean;
@@ -46,6 +47,7 @@ type ProductoConTallas = {
   precio_venta: { toNumber(): number };
   imagen_url: string | null;
   imagenes: string[];
+  material: string | null;
   referencia_modelo: string | null;
   disponible: boolean;
   destacado: boolean;
@@ -87,6 +89,7 @@ const seleccion = {
   precio_venta: true,
   imagen_url: true,
   imagenes: true,
+  material: true,
   referencia_modelo: true,
   disponible: true,
   destacado: true,

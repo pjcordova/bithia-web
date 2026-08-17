@@ -29,6 +29,9 @@ model productos {
   // Fotos adicionales para la galería de la ficha. La galería completa es
   // [imagen_url, ...imagenes], así la portada siempre va primero.
   imagenes          String[] @default([])
+  // Composición de la tela. Ej. "Lino 70%, viscosa 30%". Es de los datos que
+  // más consultan por WhatsApp: ponerlo en la ficha ahorra esa conversación.
+  material          String?
   // Ej. "Antonia mide 1.73 m (busto 85, cintura 62, cadera 87) y usa talla S".
   // Da escala: sin un cuerpo de referencia, las medidas en cm no dicen nada.
   referencia_modelo String?
