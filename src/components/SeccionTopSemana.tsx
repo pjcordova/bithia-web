@@ -38,17 +38,20 @@ export function SeccionTopSemana({
     [producto, talla]
   );
 
+  // El índice lo fija SOLO el scroll. Si irA también lo fijara, los dos se
+  // pisarían mientras dura el desplazamiento suave —onScroll sigue disparando
+  // durante la animación— y el punto resaltado quedaría peleado con el real.
   const irA = useCallback((i: number) => {
     const el = pista.current;
     if (!el) return;
     el.scrollTo({ left: el.clientWidth * i, behavior: "smooth" });
-    setIndice(i);
   }, []);
 
   const alDesplazar = useCallback(() => {
     const el = pista.current;
-    if (!el) return;
-    setIndice(Math.round(el.scrollLeft / el.clientWidth));
+    if (!el || el.clientWidth === 0) return;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    setIndice((actual) => (actual === i ? actual : i));
   }, []);
 
   if (!producto || producto.galeria.length === 0) return null;
@@ -83,19 +86,25 @@ export function SeccionTopSemana({
       </h2>
 
       <div className="mx-auto mt-10 grid max-w-6xl gap-10 px-4 md:grid-cols-2 md:gap-14">
-        {/* ---------- Galería deslizable ---------- */}
-        <div className="relative">
-          <div
-            ref={pista}
-            onScroll={alDesplazar}
-            className="ocultar-scrollbar flex snap-x snap-mandatory overflow-x-auto rounded-tarjeta"
-            aria-roledescription="carrusel"
-            aria-label={`Fotos de ${producto.nombre}`}
-          >
+        {/* ---------- Galería deslizable ----------
+            En desktop la foto se estira hasta igualar la altura de la columna
+            de datos, que termina en la referencia de tallas. Con proporción
+            fija quedaba un hueco debajo. El min-h evita el caso inverso: si la
+            prenda no tiene descripción ni material, la columna derecha es
+            corta y la foto se achicaría demasiado. */}
+        <div className="md:flex md:h-full md:flex-col">
+          <div className="relative md:min-h-[520px] md:flex-1">
+            <div
+              ref={pista}
+              onScroll={alDesplazar}
+              className="ocultar-scrollbar flex h-full snap-x snap-mandatory overflow-x-auto rounded-tarjeta"
+              aria-roledescription="carrusel"
+              aria-label={`Fotos de ${producto.nombre}`}
+            >
             {producto.galeria.map((url, i) => (
               <div
                 key={url + i}
-                className="relative aspect-[3/4] w-full shrink-0 snap-center bg-rosa-suave/25"
+                className="relative aspect-[3/4] w-full shrink-0 snap-center bg-rosa-suave/25 md:aspect-auto md:h-full"
               >
                 <Image
                   src={url}
@@ -111,22 +120,29 @@ export function SeccionTopSemana({
                 />
               </div>
             ))}
+            </div>
+
+            {/* Las flechas van en esta caja, no en la columna entera: así
+                quedan centradas sobre la foto y no sobre foto más puntos. */}
+            {total > 1 && (
+              <>
+                <FlechaGaleria
+                  lado="izquierda"
+                  visible={indice > 0}
+                  onClick={() => irA(indice - 1)}
+                />
+                <FlechaGaleria
+                  lado="derecha"
+                  visible={indice < total - 1}
+                  onClick={() => irA(indice + 1)}
+                />
+              </>
+            )}
           </div>
 
           {total > 1 && (
             <>
-              <FlechaGaleria
-                lado="izquierda"
-                visible={indice > 0}
-                onClick={() => irA(indice - 1)}
-              />
-              <FlechaGaleria
-                lado="derecha"
-                visible={indice < total - 1}
-                onClick={() => irA(indice + 1)}
-              />
-
-              <div className="mt-4 flex justify-center gap-2">
+              <div className="mt-4 flex shrink-0 justify-center gap-2">
                 {producto.galeria.map((url, i) => (
                   <button
                     key={url + i}
