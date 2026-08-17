@@ -43,15 +43,21 @@ export function Hero() {
     }
   }, []);
 
+  // El <div> envoltorio no recorta a propósito: la flecha cuelga media altura
+  // por debajo del hero, y dentro del overflow-hidden del <section> se le
+  // cortaba la mitad inferior al círculo.
+  // El <section> se queda con overflow-hidden porque recorta las fotos del
+  // carrusel y las esquinas redondeadas.
   return (
-    <section
-      className="relative -mx-4 h-[78vh] min-h-[460px] overflow-hidden md:mx-0 md:h-[80vh] md:rounded-tarjeta"
-      // Pausa mientras la clienta lee: nada más molesto que un carrusel que
-      // cambia justo cuando ibas a tocar el botón.
-      onMouseEnter={() => setPausado(true)}
-      onMouseLeave={() => setPausado(false)}
-      onTouchStart={() => setPausado(true)}
-      aria-roledescription="carrusel"
+    <div className="relative -mx-4 md:mx-0">
+      <section
+        className="relative h-[78vh] min-h-[460px] overflow-hidden md:h-[80vh] md:rounded-tarjeta"
+        // Pausa mientras la clienta lee: nada más molesto que un carrusel que
+        // cambia justo cuando ibas a tocar el botón.
+        onMouseEnter={() => setPausado(true)}
+        onMouseLeave={() => setPausado(false)}
+        onTouchStart={() => setPausado(true)}
+        aria-roledescription="carrusel"
       aria-label="Destacados de Bithia Brand"
     >
       {SLIDES.map((slide, i) => {
@@ -146,15 +152,18 @@ export function Hero() {
         </div>
       )}
 
-      {/* Flecha que baja a novedades */}
+      </section>
+
+      {/* Flecha que baja a la siguiente sección. Va fuera del <section> porque
+          ese recorta su contenido y le cortaba la mitad inferior al círculo. */}
       <button
         type="button"
         onClick={bajar}
         aria-label="Ver las prendas nuevas"
-        className="absolute bottom-0 left-1/2 flex h-12 w-12 -translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-white text-carbon shadow-lg transition hover:bg-crema"
+        className="absolute bottom-0 left-1/2 z-10 flex h-12 w-12 -translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-white text-carbon shadow-lg ring-1 ring-linea transition hover:bg-crema hover:shadow-xl"
       >
-        <ChevronDown size={22} />
+        <ChevronDown size={22} aria-hidden />
       </button>
-    </section>
+    </div>
   );
 }
