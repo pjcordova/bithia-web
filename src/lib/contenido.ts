@@ -53,8 +53,12 @@ export type Slide = {
  * mínimo 1200px de ancho, con la modelo descentrada hacia la derecha para que
  * el texto de la izquierda no le tape la cara en desktop.
  */
+const CLOUD = "https://res.cloudinary.com/rrh7xuqq/image/upload";
+
 export const SLIDES: Slide[] = [
   {
+    imagen: `${CLOUD}/samples/outdoor-woman.jpg`,
+    velo: 0.35,
     etiqueta: "Nueva colección",
     titulo: "Renueva tu estilo con Bithia",
     subtitulo:
@@ -62,6 +66,8 @@ export const SLIDES: Slide[] = [
     cta: { texto: "Ver catálogo", href: "/catalogo" },
   },
   {
+    imagen: `${CLOUD}/samples/look-up.jpg`,
+    velo: 0.4,
     etiqueta: "Recién llegado",
     titulo: "Lo nuevo de esta quincena",
     subtitulo:
@@ -69,6 +75,8 @@ export const SLIDES: Slide[] = [
     cta: { texto: "Ver novedades", href: "/catalogo" },
   },
   {
+    imagen: `${CLOUD}/samples/two-ladies.jpg`,
+    velo: 0.4,
     etiqueta: "Visítanos",
     titulo: "Pruébate en el stand",
     subtitulo:
@@ -88,7 +96,7 @@ export const TIENDA = {
   nombre: "Galería Polvos Rosados",
   ciudad: "Ica, Perú",
   /** TODO: reemplazar por una foto real del stand de Bithia. */
-  foto: "https://res.cloudinary.com/rrh7xuqq/image/upload/sample.jpg",
+  foto: "https://res.cloudinary.com/rrh7xuqq/image/upload/samples/people/kitchen-bar.jpg",
   /** Búsqueda en Maps, no un punto inventado: la dirección exacta la fija la dueña. */
   mapa: "https://www.google.com/maps/search/?api=1&query=Galer%C3%ADa+Polvos+Rosados+Ica+Per%C3%BA",
 };
