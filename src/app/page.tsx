@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Store, Truck } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { Footer } from "@/components/Footer";
@@ -10,7 +9,9 @@ import { BandaMarquesina } from "@/components/BandaMarquesina";
 import { BannerEdicionLimitada } from "@/components/BannerEdicionLimitada";
 import { SeccionTopSemana } from "@/components/SeccionTopSemana";
 import { SeccionShopTheLook } from "@/components/SeccionShopTheLook";
-import { MARQUESINA_SECUNDARIA } from "@/lib/contenido";
+import { BannerTienda } from "@/components/BannerTienda";
+import { FranjaGarantias } from "@/components/FranjaGarantias";
+import { MARQUESINA_SECUNDARIA, MARQUESINA_TERCERA } from "@/lib/contenido";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import {
   listarCategoriasDestacadas,
@@ -103,32 +104,14 @@ export default async function HomePage() {
           className="mt-20"
         />
 
+        <BandaMarquesina mensaje={MARQUESINA_TERCERA} className="mt-20" />
+
         <SeccionShopTheLook look={look} />
 
-        <div className="mx-auto max-w-6xl px-4">
-        <section className="mt-14 grid gap-4 md:grid-cols-2">
-          <div className="rounded-tarjeta bg-rosa-suave/40 p-8">
-            <Truck className="text-terracota-oscuro" size={28} aria-hidden />
-            <h2 className="mt-4 text-lg font-extrabold text-carbon">
-              Nueva mercadería cada 15 días
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-carbon-suave">
-              Mantenemos nuestro catálogo fresco y actualizado para que siempre
-              encuentres la última tendencia en Ica.
-            </p>
-          </div>
+        <BannerTienda />
 
-          <div className="flex flex-col items-center justify-center rounded-tarjeta bg-terracota p-8 text-center text-white">
-            <Store size={28} aria-hidden />
-            <h2 className="mt-4 text-lg font-extrabold">Visítanos</h2>
-            <p className="mt-2 text-sm opacity-90">
-              Galería Polvos Rosados
-              <br />
-              Ica, Perú
-            </p>
-          </div>
-        </section>
-        </div>
+        <FranjaGarantias />
+
       </main>
       <Footer />
       <WhatsAppFAB />

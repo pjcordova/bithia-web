@@ -27,6 +27,13 @@ export const MARQUESINA = "Mercadería nueva cada 15 días";
  */
 export const MARQUESINA_SECUNDARIA = "Pocas unidades por modelo";
 
+/**
+ * Tercera banda, entre la prenda recién llegada y "Chic Style". Enlaza las dos
+ * secciones: la de arriba muestra una prenda suelta y la de abajo el conjunto
+ * armado, así que el mensaje habla justamente de combinar.
+ */
+export const MARQUESINA_TERCERA = "Armamos tu look contigo por WhatsApp";
+
 export type Slide = {
   /** Foto de fondo. Sin imagen se usa el degradado cálido de marca. */
   imagen?: string;
@@ -72,3 +79,70 @@ export const SLIDES: Slide[] = [
 
 /** Cada cuántos milisegundos avanza el carrusel. */
 export const HERO_INTERVALO_MS = 6000;
+
+// ---------------------------------------------------------------------------
+// Tienda física
+// ---------------------------------------------------------------------------
+
+export const TIENDA = {
+  nombre: "Galería Polvos Rosados",
+  ciudad: "Ica, Perú",
+  /** TODO: reemplazar por una foto real del stand de Bithia. */
+  foto: "https://res.cloudinary.com/rrh7xuqq/image/upload/sample.jpg",
+  /** Búsqueda en Maps, no un punto inventado: la dirección exacta la fija la dueña. */
+  mapa: "https://www.google.com/maps/search/?api=1&query=Galer%C3%ADa+Polvos+Rosados+Ica+Per%C3%BA",
+};
+
+// ---------------------------------------------------------------------------
+// Franja de garantías
+// ---------------------------------------------------------------------------
+
+/**
+ * Cada punto es una promesa que la clienta puede reclamar después.
+ *
+ * La referencia anuncia envíos gratis, pagos con Mercado Pago y cuotas sin
+ * intereses. Nada de eso aplica a Bithia: no hay pasarela de pago ni política
+ * de envío gratis, la entrega se coordina caso por caso. Aquí van solo cosas
+ * que el negocio sí cumple hoy.
+ */
+export const GARANTIAS = [
+  {
+    icono: "tienda" as const,
+    titulo: "Recojo en tienda",
+    detalle: "En nuestro stand de Galería Polvos Rosados, Ica.",
+  },
+  {
+    icono: "envio" as const,
+    titulo: "Delivery coordinado",
+    detalle: "Acordamos entrega y costo contigo por WhatsApp.",
+  },
+  {
+    icono: "renovacion" as const,
+    titulo: "Mercadería nueva",
+    detalle: "Renovamos el catálogo cada 15 días.",
+  },
+  {
+    icono: "asesoria" as const,
+    titulo: "Atención personalizada",
+    detalle: "Te asesoramos con tallas y medidas antes de comprar.",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Footer
+// ---------------------------------------------------------------------------
+
+export const INSTAGRAM_URL = "https://instagram.com/bithia_brand";
+
+/**
+ * Enlaces legales del pie. Se muestran solo los que tienen destino: un enlace
+ * a una política que no existe es peor que no tenerla.
+ *
+ * TODO pendientes antes de publicar:
+ *  - Términos y condiciones.
+ *  - Política de cambios y devoluciones.
+ *  - Libro de Reclamaciones: en Perú, los negocios que venden a consumidores
+ *    finales suelen estar obligados a ofrecerlo (Indecopi). Conviene que la
+ *    dueña lo confirme y enlace aquí el formulario que corresponda.
+ */
+export const ENLACES_LEGALES: { texto: string; href: string }[] = [];
