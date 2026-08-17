@@ -18,6 +18,7 @@ export type ProductoAdmin = {
   nombre: string;
   categoria: string;
   color_principal: string;
+  color_hex: string | null;
   descripcion: string | null;
   precio_venta: number;
   imagen_url: string | null;
@@ -238,15 +239,28 @@ export function ProductForm({
             </select>
           </Campo>
 
-          <Campo etiqueta="Color principal" htmlFor="color_principal">
-            <input
-              id="color_principal"
-              name="color_principal"
-              required
-              defaultValue={producto?.color_principal}
-              placeholder="Ej. Rosa pálido"
-              className={ENTRADA}
-            />
+          <Campo
+            etiqueta="Color principal"
+            htmlFor="color_principal"
+            ayuda="El nombre es el que ve la clienta. El cuadrito de al lado define el punto de color de la tarjeta; si lo dejas en blanco lo deducimos del nombre."
+          >
+            <div className="mt-2 flex gap-2">
+              <input
+                id="color_principal"
+                name="color_principal"
+                required
+                defaultValue={producto?.color_principal}
+                placeholder="Ej. Rosa pálido"
+                className={`${ENTRADA} mt-0 flex-1`}
+              />
+              <input
+                type="color"
+                name="color_hex"
+                aria-label="Punto de color de la prenda"
+                defaultValue={producto?.color_hex ?? "#c9a48d"}
+                className="mt-0 h-[46px] w-14 shrink-0 cursor-pointer rounded-lg border border-linea bg-crema p-1"
+              />
+            </div>
           </Campo>
 
           <Campo etiqueta="Descripción" htmlFor="descripcion">

@@ -30,6 +30,7 @@ type CamposProducto = {
   nombre: string;
   categoria: string;
   color_principal: string;
+  color_hex: string | null;
   descripcion: string | null;
   precio_venta: number;
   imagen_url: string | null;
@@ -44,6 +45,8 @@ function leerCampos(formData: FormData): CamposProducto | string {
   const nombre = String(formData.get("nombre") ?? "").trim();
   const categoria = String(formData.get("categoria") ?? "").trim();
   const color = String(formData.get("color_principal") ?? "").trim();
+  const hexCrudo = String(formData.get("color_hex") ?? "").trim();
+  const hex = /^#[0-9a-fA-F]{6}$/.test(hexCrudo) ? hexCrudo.toLowerCase() : null;
   const descripcion = String(formData.get("descripcion") ?? "").trim();
   const precioCrudo = String(formData.get("precio_venta") ?? "").replace(",", ".");
   const imagen = String(formData.get("imagen_url") ?? "").trim();
@@ -75,6 +78,7 @@ function leerCampos(formData: FormData): CamposProducto | string {
     nombre,
     categoria,
     color_principal: color,
+    color_hex: hex,
     descripcion: descripcion || null,
     // Se redondea a céntimos: Prisma rechaza más de 2 decimales en Decimal(10,2).
     precio_venta: Math.round(precio * 100) / 100,

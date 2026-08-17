@@ -5,27 +5,44 @@ import { Hero } from "@/components/Hero";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { SeccionDestacados } from "@/components/SeccionDestacados";
+import { SeccionCategorias } from "@/components/SeccionCategorias";
+import { BandaMarquesina } from "@/components/BandaMarquesina";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
-import { listarDestacados, listarNovedades } from "@/lib/productos";
+import {
+  listarCategoriasDestacadas,
+  listarDestacados,
+  listarNovedades,
+} from "@/lib/productos";
 
 // El catálogo cambia cada ~15 días; revalidar cada hora evita golpear Neon en
 // cada visita sin que la dueña tenga que esperar un despliegue.
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const [novedades, destacados] = await Promise.all([
+  const [novedades, destacados, categorias] = await Promise.all([
     listarNovedades(4),
     listarDestacados(8),
+    listarCategoriasDestacadas(),
   ]);
 
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-6xl px-4 pb-4">
+      <main className="pb-4">
+        {/* Hero, mosaicos y banda van a sangre completa: el ancho máximo se
+            aplica por sección, no al <main>, para que la foto de portada
+            llegue a los dos bordes también en desktop. */}
         <Hero />
 
-        <SeccionDestacados id="destacados" productos={destacados} />
+        <div className="mx-auto max-w-6xl px-4">
+          <SeccionDestacados id="destacados" productos={destacados} />
+        </div>
 
+        <SeccionCategorias categorias={categorias} />
+
+        <BandaMarquesina />
+
+        <div className="mx-auto max-w-6xl px-4">
         <section id="novedades" className="mt-20 scroll-mt-24">
           <h2 className="text-xl font-semibold uppercase tracking-[0.1em] text-carbon">
             Nuevas esta semana
@@ -81,6 +98,7 @@ export default async function HomePage() {
             </p>
           </div>
         </section>
+        </div>
       </main>
       <Footer />
       <WhatsAppFAB />

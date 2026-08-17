@@ -17,6 +17,9 @@ export const ANUNCIOS = [
   "Coordinamos tu delivery por WhatsApp",
 ] as const;
 
+/** Mensaje de la banda que desfila bajo las categorías. */
+export const MARQUESINA = "Mercadería nueva cada 15 días";
+
 export type Slide = {
   /** Foto de fondo. Sin imagen se usa el degradado cálido de marca. */
   imagen?: string;

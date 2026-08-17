@@ -34,6 +34,18 @@
   }
 }
 
+/* Recorre la mitad exacta del contenido: como está duplicado, al llegar al 50%
+   la segunda copia ocupa la posición inicial de la primera y el ciclo reinicia
+   sin salto visible. */
+@keyframes desfilar {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @keyframes desvanecer {
   from {
     opacity: 0;

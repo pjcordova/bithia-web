@@ -49,9 +49,9 @@ export function Hero() {
   // El <section> se queda con overflow-hidden porque recorta las fotos del
   // carrusel y las esquinas redondeadas.
   return (
-    <div className="relative -mx-4 md:mx-0">
+    <div className="relative">
       <section
-        className="relative h-[78vh] min-h-[460px] overflow-hidden md:h-[80vh] md:rounded-tarjeta"
+        className="relative h-[78vh] min-h-[460px] overflow-hidden md:h-[85vh]"
         // Pausa mientras la clienta lee: nada más molesto que un carrusel que
         // cambia justo cuando ibas a tocar el botón.
         onMouseEnter={() => setPausado(true)}

@@ -18,6 +18,10 @@ model productos {
   nombre            String
   categoria         String
   color_principal   String
+  // Hex del punto de color de la tarjeta (#RRGGBB). El nombre se conserva
+  // porque el punto solo no sirve: sin texto no hay nada que leer para un
+  // lector de pantalla ni para quien no distingue colores.
+  color_hex         String?
   descripcion       String?
   precio_venta      Decimal  @db.Decimal(10, 2)
   imagen_url        String?

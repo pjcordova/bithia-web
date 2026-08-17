@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { NOMBRES_CATEGORIA } from "@/lib/categorias";
 
 // Prisma devuelve `precio_venta` como Decimal, que no es serializable hacia un
 // Client Component. Toda lectura pasa por aquí y sale como number.
@@ -8,6 +9,7 @@ export type ProductoPublico = {
   nombre: string;
   categoria: string;
   color_principal: string;
+  color_hex: string | null;
   descripcion: string | null;
   precio_venta: number;
   imagen_url: string | null;
@@ -23,6 +25,7 @@ type ProductoConTallas = {
   nombre: string;
   categoria: string;
   color_principal: string;
+  color_hex: string | null;
   descripcion: string | null;
   precio_venta: { toNumber(): number };
   imagen_url: string | null;
@@ -50,6 +53,7 @@ const seleccion = {
   nombre: true,
   categoria: true,
   color_principal: true,
+  color_hex: true,
   descripcion: true,
   precio_venta: true,
   imagen_url: true,
@@ -125,6 +129,57 @@ export async function listarDestacados(limite = 8): Promise<ProductoPublico[]> {
         take: limite,
       });
       return filas.map(serializar);
+    },
+    []
+  );
+}
+
+export type CategoriaDestacada = {
+  nombre: string;
+  imagen: string | null;
+  cantidad: number;
+};
+
+/**
+ * Categorías para la fila de mosaicos de la portada, con una foto de muestra.
+ *
+ * La foto no se administra aparte: se toma de la prenda más reciente de esa
+ * categoría. Así el mosaico se renueva solo con cada carga de mercadería, sin
+ * que la dueña tenga que mantener imágenes de portada además del catálogo.
+ */
+export async function listarCategoriasDestacadas(): Promise<
+  CategoriaDestacada[]
+> {
+  return leerSeguro(
+    "listarCategoriasDestacadas",
+    async () => {
+      const filas = await prisma.productos.findMany({
+        where: { visible_en_tienda: true },
+        select: { categoria: true, imagen_url: true },
+        orderBy: { created_at: "desc" },
+      });
+
+      const porCategoria = new Map<string, CategoriaDestacada>();
+      for (const { categoria, imagen_url } of filas) {
+        const actual = porCategoria.get(categoria);
+        if (!actual) {
+          porCategoria.set(categoria, {
+            nombre: categoria,
+            imagen: imagen_url,
+            cantidad: 1,
+          });
+        } else {
+          actual.cantidad += 1;
+          // Las filas vienen de la más nueva a la más vieja, así que la
+          // primera con foto es la más reciente que tiene una.
+          if (!actual.imagen) actual.imagen = imagen_url;
+        }
+      }
+
+      // Se respeta el orden fijo del catálogo, no el de la base.
+      return NOMBRES_CATEGORIA.map((n) => porCategoria.get(n)).filter(
+        (c): c is CategoriaDestacada => Boolean(c)
+      );
     },
     []
   );

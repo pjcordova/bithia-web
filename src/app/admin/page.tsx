@@ -22,6 +22,7 @@ export default async function AdminPage() {
     nombre: p.nombre,
     categoria: p.categoria,
     color_principal: p.color_principal,
+    color_hex: p.color_hex,
     descripcion: p.descripcion,
     precio_venta: p.precio_venta.toNumber(),
     imagen_url: p.imagen_url,
