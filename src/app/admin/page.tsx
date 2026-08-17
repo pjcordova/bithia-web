@@ -29,6 +29,7 @@ export default async function AdminPage() {
     visible_en_tienda: p.visible_en_tienda,
     disponible: p.disponible,
     destacado: p.destacado,
+    edicion_limitada: p.edicion_limitada,
     tallas: p.tallas.map((t) => t.talla),
   }));
 

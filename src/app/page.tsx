@@ -7,9 +7,11 @@ import { ProductCard } from "@/components/ProductCard";
 import { SeccionDestacados } from "@/components/SeccionDestacados";
 import { SeccionCategorias } from "@/components/SeccionCategorias";
 import { BandaMarquesina } from "@/components/BandaMarquesina";
+import { BannerEdicionLimitada } from "@/components/BannerEdicionLimitada";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import {
   listarCategoriasDestacadas,
+  obtenerEdicionLimitada,
   listarDestacados,
   listarNovedades,
 } from "@/lib/productos";
@@ -19,10 +21,11 @@ import {
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const [novedades, destacados, categorias] = await Promise.all([
+  const [novedades, destacados, categorias, edicionLimitada] = await Promise.all([
     listarNovedades(4),
     listarDestacados(8),
     listarCategoriasDestacadas(),
+    obtenerEdicionLimitada(),
   ]);
 
   return (
@@ -45,7 +48,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl px-4">
         <section id="novedades" className="mt-20 scroll-mt-24">
           <h2 className="text-xl font-semibold uppercase tracking-[0.1em] text-carbon">
-            Nuevas esta semana
+            Nuevos ingresos
           </h2>
           <p className="mt-1 text-sm text-carbon-suave">
             Selección exclusiva para{" "}
@@ -75,7 +78,11 @@ export default async function HomePage() {
             </Link>
           </div>
         </section>
+        </div>
 
+        <BannerEdicionLimitada producto={edicionLimitada} />
+
+        <div className="mx-auto max-w-6xl px-4">
         <section className="mt-14 grid gap-4 md:grid-cols-2">
           <div className="rounded-tarjeta bg-rosa-suave/40 p-8">
             <Truck className="text-terracota-oscuro" size={28} aria-hidden />

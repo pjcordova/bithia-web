@@ -34,6 +34,9 @@ model productos {
   // pedidos que contar. Lo marca la dueña, que atiende cada pedido por
   // WhatsApp y sabe mejor que nadie qué sale más.
   destacado         Boolean  @default(false)
+  // Protagoniza la banda de "Edición limitada" de la portada. Se muestra la
+  // más reciente marcada, así que dejar varias encendidas no rompe nada.
+  edicion_limitada  Boolean  @default(false)
   created_at        DateTime @default(now()) @db.Timestamptz(6)
   tallas            tallas[]
 

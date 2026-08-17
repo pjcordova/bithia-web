@@ -15,6 +15,7 @@ export type ProductoPublico = {
   imagen_url: string | null;
   disponible: boolean;
   destacado: boolean;
+  edicion_limitada: boolean;
   created_at: Date;
   tallas: string[];
 };
@@ -31,6 +32,7 @@ type ProductoConTallas = {
   imagen_url: string | null;
   disponible: boolean;
   destacado: boolean;
+  edicion_limitada: boolean;
   created_at: Date;
   tallas: { talla: string }[];
 };
@@ -59,6 +61,7 @@ const seleccion = {
   imagen_url: true,
   disponible: true,
   destacado: true,
+  edicion_limitada: true,
   created_at: true,
   tallas: { select: { talla: true } },
 } as const;
@@ -131,6 +134,31 @@ export async function listarDestacados(limite = 8): Promise<ProductoPublico[]> {
       return filas.map(serializar);
     },
     []
+  );
+}
+
+/**
+ * Prenda que protagoniza la banda de "Edición limitada".
+ * Si hay varias marcadas gana la más reciente, para que marcar una nueva
+ * reemplace a la anterior sin tener que acordarse de apagarla.
+ */
+export async function obtenerEdicionLimitada(): Promise<ProductoPublico | null> {
+  return leerSeguro(
+    "obtenerEdicionLimitada",
+    async () => {
+      const fila = await prisma.productos.findFirst({
+        where: {
+          visible_en_tienda: true,
+          edicion_limitada: true,
+          // Sin foto la banda no tiene sentido: es una pieza puramente visual.
+          imagen_url: { not: null },
+        },
+        select: seleccion,
+        orderBy: { created_at: "desc" },
+      });
+      return fila ? serializar(fila) : null;
+    },
+    null
   );
 }
 

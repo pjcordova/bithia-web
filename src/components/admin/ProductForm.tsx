@@ -25,6 +25,7 @@ export type ProductoAdmin = {
   visible_en_tienda: boolean;
   disponible: boolean;
   destacado: boolean;
+  edicion_limitada: boolean;
   tallas: string[];
 };
 
@@ -343,6 +344,13 @@ export function ProductForm({
             etiqueta="Mostrar en “Los más pedidos”"
             ayuda="Aparece en la fila destacada de la portada. Márcalo en las prendas que más te piden por WhatsApp — no se calcula solo, tú decides cuáles son."
             defaultChecked={producto?.destacado ?? false}
+          />
+
+          <Interruptor
+            name="edicion_limitada"
+            etiqueta="Edición limitada (banda de portada)"
+            ayuda="Protagoniza la banda grande de la portada. Necesita foto. Si marcas otra prenda, esa reemplaza a la actual."
+            defaultChecked={producto?.edicion_limitada ?? false}
           />
 
           <Interruptor

@@ -9,7 +9,7 @@ import { AnnouncementBar } from "@/components/AnnouncementBar";
 
 /** Enlaces sueltos del nav, además del desplegable de categorías. */
 const ENLACES = [
-  { href: "/catalogo", label: "Nuevas esta semana" },
+  { href: "/#novedades", label: "Nuevos ingresos" },
   { href: "/catalogo", label: "Ver todo" },
 ];
 

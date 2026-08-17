@@ -37,6 +37,7 @@ type CamposProducto = {
   visible_en_tienda: boolean;
   disponible: boolean;
   destacado: boolean;
+  edicion_limitada: boolean;
   tallas: string[];
   codigoLoteManual: string;
 };
@@ -86,6 +87,7 @@ function leerCampos(formData: FormData): CamposProducto | string {
     visible_en_tienda: formData.get("visible_en_tienda") === "on",
     disponible: formData.get("disponible") === "on",
     destacado: formData.get("destacado") === "on",
+    edicion_limitada: formData.get("edicion_limitada") === "on",
     tallas,
     codigoLoteManual,
   };
