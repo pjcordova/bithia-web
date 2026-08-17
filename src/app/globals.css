@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/* Paleta Bithia Brand — boutique minimalista.
+   El logo (azul marino + lima) es pieza de contraste puntual: su color NO se
+   replica en botones, badges ni acentos del sitio. */
+@theme {
+  --color-crema: #faf8f7;
+  --color-terracota: #c9a48d;
+  --color-terracota-oscuro: #b08a70;
+  --color-rosa: #d4a59a;
+  --color-rosa-suave: #f0dcd6;
+  --color-carbon: #5a5a5a;
+  --color-carbon-suave: #8a8a8a;
+  --color-linea: #ece5e1;
+  --color-whatsapp: #25d366;
+
+  --radius-tarjeta: 0.75rem;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-crema);
+    color: var(--color-carbon);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* El catálogo se navega casi siempre con el pulgar: el foco tiene que
+     verse, pero sin el halo azul por defecto del navegador. */
+  :focus-visible {
+    outline: 2px solid var(--color-terracota);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .sombra-tarjeta {
+    box-shadow: 0 1px 2px rgb(90 90 90 / 0.04), 0 4px 16px rgb(90 90 90 / 0.06);
+  }
+
+  .ocultar-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .ocultar-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

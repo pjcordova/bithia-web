@@ -1,0 +1,46 @@
+// Bithia Web — catálogo público + panel admin.
+// Base de datos propia (Neon), sin ninguna conexión con el Postgres del ERP.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model productos {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  // Puente de verificación humana contra el ERP. Se muestra en el catálogo y
+  // viaja en cada línea del mensaje de WhatsApp. Formato: VES-2508-03.
+  codigo_lote       String   @unique
+  nombre            String
+  categoria         String
+  color_principal   String
+  descripcion       String?
+  precio_venta      Decimal  @db.Decimal(10, 2)
+  imagen_url        String?
+  // Toggle manual del panel: oculta la prenda de la web sin borrar sus datos.
+  visible_en_tienda Boolean  @default(true)
+  // "Disponible / Agotado". La dueña lo marca a criterio propio — no hay
+  // sincronización de stock con el ERP, es deliberado.
+  disponible        Boolean  @default(true)
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  tallas            tallas[]
+
+  @@index([categoria])
+  @@index([created_at])
+}
+
+// Qué tallas existen para esta prenda. Sin cantidad: el stock exacto vive
+// solo en el ERP.
+model tallas {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  producto_id String    @db.Uuid
+  talla       String
+  productos   productos @relation(fields: [producto_id], references: [id], onDelete: Cascade)
+
+  @@unique([producto_id, talla])
+  @@index([producto_id])
+}

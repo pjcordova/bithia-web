@@ -1,0 +1,64 @@
+import Image from "next/image";
+import Link from "next/link";
+import type { ProductoPublico } from "@/lib/productos";
+import { esNueva, formatSoles } from "@/lib/format";
+
+export function ProductCard({ producto }: { producto: ProductoPublico }) {
+  const agotado = !producto.disponible;
+  const nueva = !agotado && esNueva(producto.created_at);
+
+  return (
+    <Link
+      href={`/producto/${producto.id}`}
+      className="group block overflow-hidden rounded-tarjeta bg-white sombra-tarjeta transition hover:-translate-y-0.5 hover:shadow-lg"
+    >
+      <div className="relative aspect-[3/4] bg-rosa-suave/30">
+        {producto.imagen_url ? (
+          <Image
+            src={producto.imagen_url}
+            alt={producto.nombre}
+            fill
+            sizes="(max-width: 768px) 50vw, 25vw"
+            className={`object-cover transition duration-300 group-hover:scale-[1.03] ${
+              agotado ? "opacity-50 grayscale" : ""
+            }`}
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-xs text-carbon-suave">
+            Sin foto
+          </div>
+        )}
+
+        {agotado && (
+          <span className="absolute left-2 top-2 rounded-md bg-carbon/80 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+            Agotado
+          </span>
+        )}
+        {nueva && (
+          <span className="absolute left-2 top-2 rounded-md bg-terracota px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+            Nuevo
+          </span>
+        )}
+      </div>
+
+      <div className="p-3">
+        <p className="line-clamp-2 text-sm font-medium text-carbon">
+          {producto.nombre}
+        </p>
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <p className="text-sm font-extrabold text-terracota-oscuro">
+            {formatSoles(producto.precio_venta)}
+          </p>
+          {producto.tallas.length > 0 && (
+            <p className="text-[11px] uppercase tracking-wide text-carbon-suave">
+              {producto.tallas.join(" · ")}
+            </p>
+          )}
+        </div>
+        <p className="mt-1 text-[11px] text-carbon-suave">
+          {producto.color_principal}
+        </p>
+      </div>
+    </Link>
+  );
+}
