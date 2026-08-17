@@ -84,11 +84,11 @@ function FotoDelLook({
         </p>
       )}
 
-      {/* En desktop la altura se ata a la pantalla y no a la proporción: con
-          3/4 fijo la sección medía más que la ventana y no se alcanzaban a ver
-          las dos fotos a la vez al hacer scroll. El min-h evita que se aplaste
-          en ventanas muy bajas. */}
-      <div className="relative aspect-[3/4] flex-1 overflow-hidden bg-rosa-suave/20 md:aspect-auto md:h-[55vh] md:min-h-[380px]">
+      {/* Deliberadamente más alta que la tarjeta de la derecha: esta es la foto
+          del conjunto completo y manda en la sección; la otra es una prenda
+          suelta. La altura va atada a la ventana y no a la proporción, porque
+          con 3/4 fijo la sección no entraba en pantalla de laptop. */}
+      <div className="relative aspect-[3/4] flex-1 overflow-hidden bg-rosa-suave/20 md:aspect-auto md:h-[58vh] md:min-h-[400px]">
         <Image
           src={look.imagen_url}
           alt={look.titulo}
@@ -141,7 +141,7 @@ function TarjetaPrenda({ item }: { item: ItemLook }) {
     <div>
       <Link
         href={`/producto/${variante.id}`}
-        className="group relative block aspect-[3/4] overflow-hidden bg-rosa-suave/20 md:aspect-auto md:h-[55vh] md:min-h-[380px]"
+        className="group relative block aspect-[3/4] overflow-hidden bg-rosa-suave/20 md:aspect-auto md:h-[42vh] md:min-h-[300px]"
         onMouseEnter={() => setEncima(true)}
         onMouseLeave={() => setEncima(false)}
       >
