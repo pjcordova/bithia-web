@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Menu, Search, ShoppingBag, X } from "lucide-react";
+import { ChevronDown, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
 import { CATEGORIAS } from "@/lib/categorias";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
@@ -71,6 +71,7 @@ export function Header() {
         </Link>
 
         <div className="ml-auto flex items-center gap-1">
+          <IconoUsuario />
           <IconoBuscar />
           <IconoCarrito cantidad={cantidadTotal} visible={listo} />
         </div>
@@ -161,6 +162,7 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1">
+          <IconoUsuario />
           <IconoBuscar />
           <IconoCarrito cantidad={cantidadTotal} visible={listo} />
         </div>
@@ -201,6 +203,24 @@ export function Header() {
       )}
       </header>
     </>
+  );
+}
+
+/**
+ * No hay cuentas de cliente —están fuera del MVP—, así que apunta al único
+ * acceso que existe: el panel de la dueña. Le sirve para entrar desde el
+ * celular sin escribir la URL a mano.
+ */
+function IconoUsuario() {
+  return (
+    <Link
+      href="/admin/login"
+      className="rounded-lg p-2 text-carbon transition hover:bg-rosa-suave/50 hover:text-terracota"
+      aria-label="Acceso al panel de administración"
+      title="Administración"
+    >
+      <User size={20} />
+    </Link>
   );
 }
 
