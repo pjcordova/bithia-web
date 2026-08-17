@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, Store, Truck } from "lucide-react";
+import { Store, Truck } from "lucide-react";
 import { Header } from "@/components/Header";
+import { Hero } from "@/components/Hero";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
@@ -17,30 +18,10 @@ export default async function HomePage() {
     <>
       <Header />
       <main className="mx-auto max-w-6xl px-4 pb-4">
-        <section className="relative mt-4 overflow-hidden rounded-tarjeta bg-rosa-suave/50">
-          <div className="max-w-md px-6 py-12 md:px-10 md:py-20">
-            <span className="inline-block rounded-md bg-rosa-suave px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-terracota-oscuro">
-              Nueva colección
-            </span>
-            <h1 className="mt-4 text-3xl font-extrabold leading-tight text-carbon md:text-5xl">
-              Renueva tu estilo con Bithia
-            </h1>
-            <p className="mt-4 text-sm leading-relaxed text-carbon-suave md:text-base">
-              Descubre prendas exclusivas diseñadas para realzar tu belleza
-              natural. Moda boutique con la calidez de Ica.
-            </p>
-            <Link
-              href="/catalogo"
-              className="mt-8 inline-flex items-center gap-2 rounded-lg bg-terracota px-6 py-3 text-sm font-semibold text-white transition hover:bg-terracota-oscuro"
-            >
-              Ver catálogo
-              <ArrowRight size={16} aria-hidden />
-            </Link>
-          </div>
-        </section>
+        <Hero />
 
-        <section className="mt-12">
-          <h2 className="text-xl font-extrabold text-carbon">
+        <section id="novedades" className="mt-20 scroll-mt-24">
+          <h2 className="text-xl font-semibold uppercase tracking-[0.1em] text-carbon">
             Nuevas esta semana
           </h2>
           <p className="mt-1 text-sm text-carbon-suave">

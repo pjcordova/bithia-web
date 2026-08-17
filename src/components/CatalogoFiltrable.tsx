@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import type { ProductoPublico } from "@/lib/productos";
@@ -21,8 +22,17 @@ export function CatalogoFiltrable({
 }: {
   productos: ProductoPublico[];
 }) {
+  // El desplegable del header enlaza a /catalogo?categoria=Vestidos, así que
+  // la pestaña correcta tiene que venir ya marcada al aterrizar.
+  const params = useSearchParams();
+  const categoriaInicial = params.get("categoria");
+
   const [busqueda, setBusqueda] = useState("");
-  const [categoria, setCategoria] = useState<string>(TODAS);
+  const [categoria, setCategoria] = useState<string>(
+    categoriaInicial && NOMBRES_CATEGORIA.includes(categoriaInicial)
+      ? categoriaInicial
+      : TODAS
+  );
   const [talla, setTalla] = useState<string | null>(null);
 
   // Solo se ofrecen las categorías que realmente tienen prendas publicadas.
