@@ -5,6 +5,7 @@ import { Check, Copy, Loader2, Upload, X } from "lucide-react";
 import type { CartItem } from "@/lib/cart-store";
 import { construirLinkWhatsApp } from "@/lib/whatsapp";
 import { METODOS_PAGO, ORDEN_METODOS, type MetodoPagoId } from "@/lib/pagos";
+import { registrarDescuentoStock } from "@/app/carrito/actions";
 
 /**
  * Paso 2 del carrito: elegir método de pago y adjuntar el comprobante antes
@@ -293,6 +294,16 @@ function ModalPago({
               e.preventDefault();
               return;
             }
+            // No se espera la respuesta: el pedido ya sale por WhatsApp pase
+            // lo que pase con el ERP. Mientras no exista el endpoint del
+            // otro lado, esto simplemente no hace nada (ver lib/erp.ts).
+            registrarDescuentoStock(
+              items.map((i) => ({
+                codigo_lote: i.codigoLote,
+                talla: i.talla,
+                cantidad: i.cantidad,
+              }))
+            );
             onEnviado();
           }}
           className={`mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-whatsapp py-4 text-sm font-bold text-white transition ${

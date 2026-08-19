@@ -128,5 +128,10 @@ build, el catálogo sale vacío y se registra el error, pero el despliegue no fa
 
 ## Fuera de alcance del MVP
 
-Pago online, cuentas de cliente, sincronización de stock con el ERP y tabla de
-pedidos propia. El diseño no cierra la puerta a agregar pagos más adelante.
+Pago online, cuentas de cliente y tabla de pedidos propia. El diseño no
+cierra la puerta a agregar pagos más adelante.
+
+La sincronización de stock con el ERP tiene el lado de `bithia-web` ya
+preparado (avisa al ERP por HTTP al confirmar un pedido) pero inactivo hasta
+que el ERP exponga su endpoint — ver
+[`docs/integracion-erp-stock.md`](docs/integracion-erp-stock.md).

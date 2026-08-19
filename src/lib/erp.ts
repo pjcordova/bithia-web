@@ -1,0 +1,57 @@
+export type LineaDescuento = {
+  codigo_lote: string;
+  talla: string;
+  cantidad: number;
+};
+
+export type ResultadoDescuentoErp =
+  | { ok: true }
+  | { ok: false; motivo: string };
+
+/**
+ * Avisa al ERP que se confirmó un pedido para que descuente ahí el stock
+ * real — bithia-web nunca guarda cantidades propias, a propósito (ver
+ * README). Es el otro sistema, el que sabe descontar sin duplicar el dato.
+ *
+ * Nunca debe bloquear ni tumbar el flujo de WhatsApp: si el ERP no responde,
+ * no está configurado, o tarda demasiado, se devuelve el motivo para
+ * registrarlo en el log, pero el pedido ya se mandó igual. Ver
+ * docs/integracion-erp-stock.md para el contrato completo del endpoint.
+ */
+export async function notificarDescuentoStock(
+  lineas: LineaDescuento[]
+): Promise<ResultadoDescuentoErp> {
+  const url = process.env.ERP_STOCK_WEBHOOK_URL;
+  const apiKey = process.env.ERP_STOCK_API_KEY;
+
+  if (!url || !apiKey) {
+    return {
+      ok: false,
+      motivo: "ERP no configurado (faltan ERP_STOCK_WEBHOOK_URL / ERP_STOCK_API_KEY).",
+    };
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ items: lineas }),
+      // El pedido ya se envió por WhatsApp; no tiene sentido que este
+      // aviso, que es un extra, deje a la clienta esperando.
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!res.ok) {
+      return { ok: false, motivo: `El ERP respondió con estado ${res.status}.` };
+    }
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      motivo: e instanceof Error ? e.message : "Error desconocido al contactar el ERP.",
+    };
+  }
+}
