@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BadgeCheck, Minus, Plus, ShoppingCart, Truck } from "lucide-react";
 import type { ProductoPublico } from "@/lib/productos";
@@ -10,7 +9,6 @@ import { esNueva, formatSoles } from "@/lib/format";
 import { TALLAS } from "@/lib/categorias";
 
 export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
-  const router = useRouter();
   const { agregar } = useCart();
   const agotado = !producto.disponible;
 
@@ -18,6 +16,9 @@ export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
     producto.tallas.length === 1 ? producto.tallas[0] : null
   );
   const [cantidad, setCantidad] = useState(1);
+  // Confirmación en la misma página: ya no se redirige al carrito para que
+  // la clienta pueda seguir agregando más prendas sin interrupciones.
+  const [agregado, setAgregado] = useState(false);
 
   const puedeAgregar = !agotado && talla !== null;
 
@@ -32,7 +33,8 @@ export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
       cantidad,
       imagenUrl: producto.imagen_url,
     });
-    router.push("/carrito");
+    setAgregado(true);
+    setTimeout(() => setAgregado(false), 2500);
   }
 
   return (
@@ -153,6 +155,14 @@ export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
           <ShoppingCart size={18} aria-hidden />
           {agotado ? "Agotado" : "Agregar al carrito"}
         </button>
+        {agregado && (
+          <p
+            role="status"
+            className="mt-2 text-center text-xs font-semibold text-terracota-oscuro"
+          >
+            Agregado al carrito ✓
+          </p>
+        )}
 
         {producto.descripcion && (
           <p className="mt-6 text-sm leading-relaxed text-carbon-suave">

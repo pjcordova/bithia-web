@@ -212,6 +212,88 @@ export async function eliminarProducto(formData: FormData): Promise<void> {
   refrescarVistas(id);
 }
 
+export type SlideState = { error?: string; ok?: boolean };
+
+type CamposSlide = {
+  orden: number;
+  imagen_url: string | null;
+  etiqueta: string | null;
+  titulo: string;
+  subtitulo: string | null;
+  cta_texto: string;
+  cta_href: string;
+  velo: number;
+  activo: boolean;
+};
+
+function leerCamposSlide(formData: FormData): CamposSlide | string {
+  const titulo = String(formData.get("titulo") ?? "").trim();
+  const ctaTexto = String(formData.get("cta_texto") ?? "").trim();
+  const ctaHref = String(formData.get("cta_href") ?? "").trim();
+  const imagen = String(formData.get("imagen_url") ?? "").trim();
+  const ordenCrudo = String(formData.get("orden") ?? "0");
+  const veloCrudo = String(formData.get("velo") ?? "0.35").replace(",", ".");
+
+  if (!titulo) return "Escribe el título de la diapositiva.";
+  if (!ctaTexto) return "Escribe el texto del botón.";
+  if (!ctaHref.startsWith("/")) return "El destino del botón debe empezar con /.";
+  if (imagen && !imagen.startsWith("https://res.cloudinary.com/")) {
+    return "La foto no se subió correctamente. Intenta de nuevo.";
+  }
+
+  const orden = Number.parseInt(ordenCrudo, 10);
+  const velo = Number.parseFloat(veloCrudo);
+
+  return {
+    orden: Number.isFinite(orden) ? orden : 0,
+    imagen_url: imagen || null,
+    etiqueta: String(formData.get("etiqueta") ?? "").trim() || null,
+    titulo,
+    subtitulo: String(formData.get("subtitulo") ?? "").trim() || null,
+    cta_texto: ctaTexto,
+    cta_href: ctaHref,
+    velo: Number.isFinite(velo) ? Math.min(1, Math.max(0, velo)) : 0.35,
+    activo: formData.get("activo") === "on",
+  };
+}
+
+export async function crearSlide(
+  _prev: SlideState,
+  formData: FormData
+): Promise<SlideState> {
+  await exigirSesion();
+  const campos = leerCamposSlide(formData);
+  if (typeof campos === "string") return { error: campos };
+
+  await prisma.hero_slides.create({ data: campos });
+  refrescarVistas();
+  return { ok: true };
+}
+
+export async function actualizarSlide(
+  _prev: SlideState,
+  formData: FormData
+): Promise<SlideState> {
+  await exigirSesion();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return { error: "Falta el identificador de la diapositiva." };
+
+  const campos = leerCamposSlide(formData);
+  if (typeof campos === "string") return { error: campos };
+
+  await prisma.hero_slides.update({ where: { id }, data: campos });
+  refrescarVistas();
+  return { ok: true };
+}
+
+export async function eliminarSlide(formData: FormData): Promise<void> {
+  await exigirSesion();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  await prisma.hero_slides.delete({ where: { id } });
+  refrescarVistas();
+}
+
 function esCodigoDuplicado(e: unknown): boolean {
   return (
     typeof e === "object" &&

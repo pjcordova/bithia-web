@@ -1,26 +1,77 @@
 "use client";
 
-import Image from "next/image";
-import { useState } from "react";
-import { LogOut, Pencil, Plus, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { LogOut, Plus } from "lucide-react";
 import { ProductForm, type ProductoAdmin } from "@/components/admin/ProductForm";
+import { AdminSeccionDestacados } from "@/components/admin/AdminSeccionDestacados";
+import { AdminSeccionCategorias } from "@/components/admin/AdminSeccionCategorias";
+import { AdminGridProductos } from "@/components/admin/AdminGridProductos";
+import { AdminBannerEdicionLimitada } from "@/components/admin/AdminBannerEdicionLimitada";
+import { AdminSeccionTopSemana } from "@/components/admin/AdminSeccionTopSemana";
+import {
+  AdminSeccionShopTheLook,
+  type AdminLook,
+} from "@/components/admin/AdminSeccionShopTheLook";
+import { AdminHero } from "@/components/admin/AdminHero";
+import { SlideForm } from "@/components/admin/SlideForm";
+import { BandaMarquesina } from "@/components/BandaMarquesina";
+import { BannerTienda } from "@/components/BannerTienda";
+import { FranjaGarantias } from "@/components/FranjaGarantias";
+import { MARQUESINA_SECUNDARIA, MARQUESINA_TERCERA } from "@/lib/contenido";
 import { cerrarSesion } from "@/app/admin/login/actions";
-import { eliminarProducto } from "@/app/admin/actions";
-import { formatSoles } from "@/lib/format";
+import type { CategoriaDestacada } from "@/lib/productos";
+import type { HeroSlide } from "@/lib/hero";
 
-export function AdminDashboard({ productos }: { productos: ProductoAdmin[] }) {
+export function AdminDashboard({
+  productos,
+  categorias,
+  look,
+  slides,
+}: {
+  productos: ProductoAdmin[];
+  categorias: CategoriaDestacada[];
+  look: AdminLook | null;
+  slides: HeroSlide[];
+}) {
   // null = formulario cerrado; undefined = abierto en modo "agregar".
   const [editando, setEditando] = useState<ProductoAdmin | undefined | null>(
     null
   );
+  const [editandoSlide, setEditandoSlide] = useState<
+    HeroSlide | undefined | null
+  >(null);
+
+  // Mismos recortes que arma la home pública (lib/productos.ts), pero sin el
+  // filtro de visible_en_tienda: acá la dueña necesita ver y poder reactivar
+  // también lo que está oculto o agotado.
+  const { destacados, novedades, edicionLimitada, topSemana, bannerInferior } =
+    useMemo(() => {
+      return {
+        destacados: productos.filter((p) => p.destacado).slice(0, 8),
+        novedades: productos.slice(0, 4),
+        edicionLimitada:
+          productos.find((p) => p.edicion_limitada && p.imagen_url) ?? null,
+        topSemana: productos.find((p) => p.top_semana && p.imagen_url) ?? null,
+        bannerInferior:
+          productos.find((p) => p.banner_inferior && p.imagen_url) ?? null,
+      };
+    }, [productos]);
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-linea bg-crema/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4">
-          <h1 className="text-lg font-extrabold text-terracota-oscuro">
-            Mi Catálogo
-          </h1>
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-linea bg-crema/95 px-4 py-3 backdrop-blur">
+        <h1 className="text-lg font-extrabold text-terracota-oscuro">
+          Panel de administración
+        </h1>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setEditando(undefined)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-terracota px-4 py-2 text-xs font-semibold text-white transition hover:bg-terracota-oscuro sm:text-sm"
+          >
+            <Plus size={16} aria-hidden />
+            Agregar prenda
+          </button>
           <form action={cerrarSesion}>
             <button
               type="submit"
@@ -33,133 +84,90 @@ export function AdminDashboard({ productos }: { productos: ProductoAdmin[] }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-4 py-6">
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="text-2xl font-extrabold text-carbon">Inventario</h2>
-          <button
-            type="button"
-            onClick={() => setEditando(undefined)}
-            className="inline-flex items-center gap-1.5 rounded-full bg-terracota px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-terracota-oscuro"
-          >
-            <Plus size={16} aria-hidden />
-            Agregar
-          </button>
+      <p className="mx-auto max-w-6xl px-4 pt-4 text-center text-xs text-carbon-suave">
+        Esta es la misma página que ve la clienta, en el mismo orden. Toca
+        cualquier foto para editar esa prenda.
+      </p>
+
+      <main>
+        <AdminHero
+          slides={slides}
+          onEditar={setEditandoSlide}
+          onAgregar={() => setEditandoSlide(undefined)}
+        />
+
+        <div className="mx-auto max-w-6xl px-4">
+          <AdminSeccionDestacados
+            productos={destacados}
+            titulo="Los más pedidos"
+            onEditar={setEditando}
+          />
         </div>
 
-        {productos.length === 0 ? (
-          <p className="mt-8 rounded-tarjeta bg-white p-8 text-center text-sm text-carbon-suave sombra-tarjeta">
-            Todavía no has agregado prendas. Toca “Agregar” para publicar la
-            primera.
-          </p>
-        ) : (
-          <ul className="mt-5 space-y-3">
-            {productos.map((p) => (
-              <li
-                key={p.id}
-                className="rounded-tarjeta bg-white p-3 sombra-tarjeta"
-              >
-                <div className="flex gap-3">
-                  <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg bg-rosa-suave/30">
-                    {p.imagen_url && (
-                      <Image
-                        src={p.imagen_url}
-                        alt={p.nombre}
-                        fill
-                        sizes="64px"
-                        className="object-cover"
-                      />
-                    )}
-                  </div>
+        <AdminSeccionCategorias categorias={categorias} />
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-bold text-carbon">
-                          {p.nombre}
-                        </p>
-                        <p className="text-xs text-rosa">{p.categoria}</p>
-                        <p className="mt-0.5 text-[11px] text-carbon-suave">
-                          {p.codigo_lote}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 gap-1">
-                        <button
-                          type="button"
-                          onClick={() => setEditando(p)}
-                          className="rounded-md p-1.5 text-carbon-suave transition hover:bg-rosa-suave/40 hover:text-terracota"
-                          aria-label={`Editar ${p.nombre}`}
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <form
-                          action={eliminarProducto}
-                          onSubmit={(e) => {
-                            if (
-                              !confirm(
-                                `¿Eliminar "${p.nombre}"? Esta acción no se puede deshacer.`
-                              )
-                            ) {
-                              e.preventDefault();
-                            }
-                          }}
-                        >
-                          <input type="hidden" name="id" value={p.id} />
-                          <button
-                            type="submit"
-                            className="rounded-md p-1.5 text-carbon-suave transition hover:bg-rosa-suave/40 hover:text-rosa"
-                            aria-label={`Eliminar ${p.nombre}`}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </form>
-                      </div>
-                    </div>
+        <BandaMarquesina />
 
-                    <p className="mt-1 text-sm font-extrabold text-terracota-oscuro">
-                      {formatSoles(p.precio_venta)}
-                    </p>
-                  </div>
-                </div>
+        <div className="mx-auto max-w-6xl px-4">
+          <AdminGridProductos
+            titulo="Nuevos ingresos"
+            productos={novedades}
+            columnas="grid-cols-2"
+            onEditar={setEditando}
+            vacioTexto="Todavía no hay prendas publicadas."
+          />
+        </div>
 
-                <div className="mt-3 flex items-center justify-between border-t border-linea pt-2.5">
-                  <p className="text-xs text-carbon-suave">
-                    Tallas:{" "}
-                    <span className="font-semibold text-carbon">
-                      {p.tallas.length > 0 ? p.tallas.join(" · ") : "—"}
-                    </span>
-                  </p>
-                  <div className="flex gap-1.5">
-                    {p.destacado && (
-                      <span className="rounded-md bg-terracota/15 px-2 py-1 text-[10px] font-bold uppercase text-terracota-oscuro">
-                        Más pedido
-                      </span>
-                    )}
-                    {!p.visible_en_tienda && (
-                      <span className="rounded-md bg-linea px-2 py-1 text-[10px] font-bold uppercase text-carbon-suave">
-                        Oculto
-                      </span>
-                    )}
-                    <span
-                      className={`rounded-md px-2 py-1 text-[10px] font-bold uppercase ${
-                        p.disponible
-                          ? "bg-rosa-suave/60 text-terracota-oscuro"
-                          : "bg-carbon/10 text-carbon"
-                      }`}
-                    >
-                      {p.disponible ? "Activo" : "Agotado"}
-                    </span>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+        <AdminBannerEdicionLimitada
+          producto={edicionLimitada}
+          titulo="Edición limitada"
+          etiqueta="Edición limitada"
+          onEditar={setEditando}
+        />
+
+        <BandaMarquesina
+          mensaje={MARQUESINA_SECUNDARIA}
+          tono="terracota"
+          className="mt-0"
+        />
+
+        <AdminSeccionTopSemana producto={topSemana} onEditar={setEditando} />
+
+        <AdminBannerEdicionLimitada
+          producto={bannerInferior}
+          titulo="Recién llegado"
+          etiqueta="Recién llegado"
+          fondo="bg-crema"
+          onEditar={setEditando}
+        />
+
+        <BandaMarquesina mensaje={MARQUESINA_TERCERA} className="mt-0" />
+
+        <AdminSeccionShopTheLook look={look} onEditar={setEditando} />
+
+        <div className="pointer-events-none opacity-95">
+          <BannerTienda />
+          <FranjaGarantias />
+        </div>
+
+        <div className="mx-auto max-w-6xl px-4 pb-10">
+          <AdminGridProductos
+            titulo="Todo el inventario"
+            productos={productos}
+            columnas="grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+            onEditar={setEditando}
+            vacioTexto='Todavía no has agregado prendas. Toca "Agregar prenda" para publicar la primera.'
+          />
+        </div>
       </main>
 
       {editando !== null && (
-        <ProductForm
-          producto={editando}
-          onCerrar={() => setEditando(null)}
+        <ProductForm producto={editando} onCerrar={() => setEditando(null)} />
+      )}
+      {editandoSlide !== null && (
+        <SlideForm
+          slide={editandoSlide}
+          onCerrar={() => setEditandoSlide(null)}
         />
       )}
     </div>

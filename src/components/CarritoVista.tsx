@@ -2,13 +2,19 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle2, Minus, Plus, Trash2 } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
 import { formatSoles } from "@/lib/format";
-import { construirLinkWhatsApp, hayNumeroWhatsApp } from "@/lib/whatsapp";
+import { hayNumeroWhatsApp } from "@/lib/whatsapp";
+import { MetodoPagoSelector } from "@/components/MetodoPagoSelector";
 
 export function CarritoVista() {
-  const { items, total, listo, cambiarCantidad, quitar } = useCart();
+  const { items, total, listo, cambiarCantidad, quitar, vaciar } = useCart();
+  // Se activa al enviar el pedido por WhatsApp: vacía el carrito para que no
+  // quede el mismo pedido esperando en el celular después de coordinarlo, y
+  // muestra el mensaje de confirmación aunque la lista ya esté vacía.
+  const [pedidoEnviado, setPedidoEnviado] = useState(false);
 
   // Hasta leer localStorage no sabemos si el carrito tiene algo; mostrar
   // "vacío" antes de tiempo haría parpadear la pantalla.
@@ -31,6 +37,10 @@ export function CarritoVista() {
         >
           Ver catálogo
         </Link>
+
+        {pedidoEnviado && (
+          <ModalGracias onCerrar={() => setPedidoEnviado(false)} />
+        )}
       </div>
     );
   }
@@ -140,34 +150,56 @@ export function CarritoVista() {
       )}
 
       {/* El pedido no se guarda en base de datos: WhatsApp es el registro. */}
-      <a
-        href={construirLinkWhatsApp(items)}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-disabled={!hayNumeroWhatsApp()}
-        onClick={(e) => {
-          if (!hayNumeroWhatsApp()) e.preventDefault();
-        }}
-        className={`mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-whatsapp py-4 text-sm font-bold text-white transition ${
-          hayNumeroWhatsApp()
-            ? "hover:brightness-95"
-            : "pointer-events-none opacity-40"
-        }`}
+      {hayNumeroWhatsApp() && (
+        <>
+          <MetodoPagoSelector
+            items={items}
+            onPedidoEnviado={() => {
+              vaciar();
+              setPedidoEnviado(true);
+            }}
+          />
+          <p className="mt-3 text-center text-xs text-carbon-suave">
+            Elige tu método de pago, adjunta la captura y coordinamos la
+            entrega por WhatsApp.
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
+function ModalGracias({ onCerrar }: { onCerrar: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-carbon/40 p-0 sm:items-center sm:p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="titulo-modal-gracias"
+      onClick={onCerrar}
+    >
+      <div
+        className="w-full rounded-t-2xl bg-white p-8 text-center sm:max-w-sm sm:rounded-2xl"
+        onClick={(e) => e.stopPropagation()}
       >
-        <svg
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="h-5 w-5"
-          aria-hidden
+        <CheckCircle2 className="mx-auto text-whatsapp" size={48} />
+        <h2
+          id="titulo-modal-gracias"
+          className="mt-4 text-xl font-extrabold text-terracota-oscuro"
         >
-          <path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5 0-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.2-.6-.4z" />
-          <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z" />
-        </svg>
-        Confirmar pedido por WhatsApp
-      </a>
-      <p className="mt-3 text-center text-xs text-carbon-suave">
-        Coordinamos contigo el pago y la entrega por WhatsApp.
-      </p>
+          ¡Gracias por tu compra!
+        </h2>
+        <p className="mt-2 text-sm text-carbon-suave">
+          Tu pedido estará listo pronto. Te confirmamos por WhatsApp los
+          detalles de pago y entrega.
+        </p>
+        <Link
+          href="/catalogo"
+          className="mt-6 block w-full rounded-lg bg-terracota-oscuro py-3 text-sm font-bold text-white transition hover:bg-carbon"
+        >
+          Seguir viendo el catálogo
+        </Link>
+      </div>
     </div>
   );
 }

@@ -34,58 +34,11 @@ export const MARQUESINA_SECUNDARIA = "Pocas unidades por modelo";
  */
 export const MARQUESINA_TERCERA = "Armamos tu look contigo por WhatsApp";
 
-export type Slide = {
-  /** Foto de fondo. Sin imagen se usa el degradado cálido de marca. */
-  imagen?: string;
-  /** Texto corto en superíndice sobre el titular. */
-  etiqueta?: string;
-  titulo: string;
-  subtitulo?: string;
-  cta: { texto: string; href: string };
-  /** Oscurece la foto para que el texto sea legible. 0 = sin velo. */
-  velo?: number;
-};
-
 /**
- * Slides del hero. Hoy funcionan sin foto (degradado de marca).
- *
- * TODO: reemplazar por fotos verticales reales de campaña. Formato 4:5 o 3:4,
- * mínimo 1200px de ancho, con la modelo descentrada hacia la derecha para que
- * el texto de la izquierda no le tape la cara en desktop.
+ * Cada cuántos milisegundos avanza el carrusel del hero.
+ * Las diapositivas en sí ya no viven acá: se administran desde el panel y se
+ * leen de la tabla hero_slides (ver lib/hero.ts).
  */
-const CLOUD = "https://res.cloudinary.com/rrh7xuqq/image/upload";
-
-export const SLIDES: Slide[] = [
-  {
-    imagen: `${CLOUD}/samples/outdoor-woman.jpg`,
-    velo: 0.35,
-    etiqueta: "Nueva colección",
-    titulo: "Renueva tu estilo con Bithia",
-    subtitulo:
-      "Prendas exclusivas diseñadas para realzar tu belleza natural, con la calidez de Ica.",
-    cta: { texto: "Ver catálogo", href: "/catalogo" },
-  },
-  {
-    imagen: `${CLOUD}/samples/look-up.jpg`,
-    velo: 0.4,
-    etiqueta: "Recién llegado",
-    titulo: "Lo nuevo de esta quincena",
-    subtitulo:
-      "Renovamos el stand cada 15 días. Lo que ves hoy puede no estar en la próxima visita.",
-    cta: { texto: "Ver novedades", href: "/catalogo" },
-  },
-  {
-    imagen: `${CLOUD}/samples/two-ladies.jpg`,
-    velo: 0.4,
-    etiqueta: "Visítanos",
-    titulo: "Pruébate en el stand",
-    subtitulo:
-      "Estamos en la Galería Polvos Rosados, Ica. Coordina tu visita por WhatsApp.",
-    cta: { texto: "Cómo llegar", href: "/catalogo" },
-  },
-];
-
-/** Cada cuántos milisegundos avanza el carrusel. */
 export const HERO_INTERVALO_MS = 6000;
 
 // ---------------------------------------------------------------------------

@@ -4,10 +4,11 @@ import Image from "next/image";
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
-import { Camera, Loader2, X } from "lucide-react";
+import { Camera, Loader2, Trash2, X } from "lucide-react";
 import {
   actualizarProducto,
   crearProducto,
+  eliminarProducto,
   type ProductoState,
 } from "@/app/admin/actions";
 import { NOMBRES_CATEGORIA, TALLAS } from "@/lib/categorias";
@@ -488,6 +489,31 @@ export function ProductForm({
             Cancelar
           </button>
         </form>
+
+        {esEdicion && producto && (
+          <form
+            action={eliminarProducto}
+            onSubmit={(e) => {
+              if (
+                !confirm(
+                  `¿Eliminar "${producto.nombre}"? Esta acción no se puede deshacer.`
+                )
+              ) {
+                e.preventDefault();
+              }
+            }}
+            className="mt-2 border-t border-linea pt-4"
+          >
+            <input type="hidden" name="id" value={producto.id} />
+            <button
+              type="submit"
+              className="flex w-full items-center justify-center gap-1.5 py-2 text-xs font-semibold text-carbon-suave transition hover:text-rosa"
+            >
+              <Trash2 size={14} />
+              Eliminar esta prenda
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

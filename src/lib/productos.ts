@@ -122,7 +122,7 @@ const seleccion = {
  * incluido el panel admin, que sí funcionaría. Preferimos registrar el error y
  * devolver vacío: la revalidación de la hora siguiente repuebla el catálogo.
  */
-async function leerSeguro<T>(
+export async function leerSeguro<T>(
   etiqueta: string,
   consulta: () => Promise<T>,
   respaldo: T

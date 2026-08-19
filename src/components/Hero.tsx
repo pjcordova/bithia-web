@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { HERO_INTERVALO_MS, SLIDES } from "@/lib/contenido";
+import { HERO_INTERVALO_MS } from "@/lib/contenido";
+import type { HeroSlide } from "@/lib/hero";
 
 /**
  * Destinos de la flecha, en orden de preferencia. "destacados" no se renderiza
@@ -13,7 +14,7 @@ import { HERO_INTERVALO_MS, SLIDES } from "@/lib/contenido";
  */
 const DESTINOS_FLECHA = ["destacados", "novedades"];
 
-export function Hero() {
+export function Hero({ slides }: { slides: HeroSlide[] }) {
   const [actual, setActual] = useState(0);
   const [pausado, setPausado] = useState(false);
   const reducirMovimiento = useRef(false);
@@ -25,13 +26,13 @@ export function Hero() {
   }, []);
 
   useEffect(() => {
-    if (SLIDES.length < 2 || pausado || reducirMovimiento.current) return;
+    if (slides.length < 2 || pausado || reducirMovimiento.current) return;
     const id = setInterval(
-      () => setActual((i) => (i + 1) % SLIDES.length),
+      () => setActual((i) => (i + 1) % slides.length),
       HERO_INTERVALO_MS
     );
     return () => clearInterval(id);
-  }, [pausado, actual]);
+  }, [pausado, actual, slides.length]);
 
   const bajar = useCallback(() => {
     for (const id of DESTINOS_FLECHA) {
@@ -42,6 +43,8 @@ export function Hero() {
       }
     }
   }, []);
+
+  if (slides.length === 0) return null;
 
   // El <div> envoltorio no recorta a propósito: la flecha cuelga media altura
   // por debajo del hero, y dentro del overflow-hidden del <section> se le
@@ -60,20 +63,20 @@ export function Hero() {
         aria-roledescription="carrusel"
       aria-label="Destacados de Bithia Brand"
     >
-      {SLIDES.map((slide, i) => {
+      {slides.map((slide, i) => {
         const visible = i === actual;
         return (
           <div
-            key={slide.titulo}
+            key={slide.id}
             className={`absolute inset-0 transition-opacity duration-700 ${
               visible ? "opacity-100" : "pointer-events-none opacity-0"
             }`}
             aria-hidden={!visible}
           >
-            {slide.imagen ? (
+            {slide.imagen_url ? (
               <>
                 <Image
-                  src={slide.imagen}
+                  src={slide.imagen_url}
                   alt=""
                   fill
                   priority={i === 0}
@@ -96,7 +99,7 @@ export function Hero() {
                   {slide.etiqueta && (
                     <span
                       className={`inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${
-                        slide.imagen
+                        slide.imagen_url
                           ? "bg-white/90 text-carbon"
                           : "bg-white/80 text-terracota-oscuro"
                       }`}
@@ -106,7 +109,7 @@ export function Hero() {
                   )}
                   <h1
                     className={`mt-5 text-3xl font-semibold uppercase leading-[1.1] tracking-[0.04em] md:text-5xl ${
-                      slide.imagen ? "text-white" : "text-carbon"
+                      slide.imagen_url ? "text-white" : "text-carbon"
                     }`}
                   >
                     {slide.titulo}
@@ -114,18 +117,18 @@ export function Hero() {
                   {slide.subtitulo && (
                     <p
                       className={`mt-4 max-w-md text-sm leading-relaxed md:text-base ${
-                        slide.imagen ? "text-white/90" : "text-carbon-suave"
+                        slide.imagen_url ? "text-white/90" : "text-carbon-suave"
                       }`}
                     >
                       {slide.subtitulo}
                     </p>
                   )}
                   <Link
-                    href={slide.cta.href}
+                    href={slide.cta_href}
                     tabIndex={visible ? 0 : -1}
                     className="mt-8 inline-block bg-terracota px-8 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-white transition hover:bg-terracota-oscuro"
                   >
-                    {slide.cta.texto}
+                    {slide.cta_texto}
                   </Link>
                 </div>
               </div>
@@ -135,11 +138,11 @@ export function Hero() {
       })}
 
       {/* Puntos abajo a la derecha, uno por slide y clickeables */}
-      {SLIDES.length > 1 && (
+      {slides.length > 1 && (
         <div className="absolute bottom-6 right-6 flex gap-2.5 md:bottom-8 md:right-10">
-          {SLIDES.map((slide, i) => (
+          {slides.map((slide, i) => (
             <button
-              key={slide.titulo}
+              key={slide.id}
               type="button"
               onClick={() => setActual(i)}
               aria-label={`Ver ${slide.titulo}`}

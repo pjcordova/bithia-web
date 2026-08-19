@@ -22,14 +22,16 @@ import {
   listarDestacados,
   listarNovedades,
 } from "@/lib/productos";
+import { listarSlidesPublicos } from "@/lib/hero";
 
 // El catálogo cambia cada ~15 días; revalidar cada hora evita golpear Neon en
 // cada visita sin que la dueña tenga que esperar un despliegue.
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const [novedades, destacados, categorias, edicionLimitada, topSemana, bannerInferior, look] =
+  const [slides, novedades, destacados, categorias, edicionLimitada, topSemana, bannerInferior, look] =
     await Promise.all([
+    listarSlidesPublicos(),
     listarNovedades(4),
     listarDestacados(8),
     listarCategoriasDestacadas(),
@@ -46,7 +48,7 @@ export default async function HomePage() {
         {/* Hero, mosaicos y banda van a sangre completa: el ancho máximo se
             aplica por sección, no al <main>, para que la foto de portada
             llegue a los dos bordes también en desktop. */}
-        <Hero />
+        <Hero slides={slides} />
 
         <div className="mx-auto max-w-6xl px-4">
           <SeccionDestacados id="destacados" productos={destacados} />
@@ -69,7 +71,7 @@ export default async function HomePage() {
               Todavía no hay prendas publicadas. Vuelve pronto.
             </p>
           ) : (
-            <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="mt-8 grid grid-cols-2 gap-4">
               {novedades.map((p) => (
                 <ProductCard key={p.id} producto={p} />
               ))}

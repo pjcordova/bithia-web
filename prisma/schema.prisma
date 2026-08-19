@@ -118,3 +118,25 @@ model tallas {
   @@unique([producto_id, talla])
   @@index([producto_id])
 }
+
+// Diapositivas del carrusel grande de portada. Antes vivían fijas en código
+// (lib/contenido.ts); pasan a la base para que la dueña las edite desde el
+// panel sin pedirle un cambio de código a nadie.
+model hero_slides {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orden       Int      @default(0)
+  imagen_url  String?
+  etiqueta    String?
+  titulo      String
+  subtitulo   String?
+  cta_texto   String
+  cta_href    String
+  // Oscurece la foto para que el texto sea legible. 0 = sin velo, 1 = negro.
+  velo        Decimal  @default(0.35) @db.Decimal(3, 2)
+  // Apagar en vez de borrar: permite guardar una diapositiva de temporada
+  // sin que se muestre hasta que se vuelva a activar.
+  activo      Boolean  @default(true)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([activo, orden])
+}
