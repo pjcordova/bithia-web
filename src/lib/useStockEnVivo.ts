@@ -17,7 +17,15 @@ export type StockEnVivo = {
   porTalla: Map<string, number>;
 };
 
-/** Stock real de un producto, consultado al ERP vía /api/stock. */
+const INTERVALO_MS = 1000;
+
+/**
+ * Stock real de un producto, consultado al ERP vía /api/stock — y vuelto a
+ * consultar cada segundo mientras la pestaña esté a la vista. Así, si el
+ * stock cambia del lado del ERP (una venta en el POS de la tienda física,
+ * o de otra clienta comprando por WhatsApp), quien esté mirando esta
+ * página lo ve reflejado casi al instante, sin tener que recargar.
+ */
 export function useStockEnVivo(codigoLote: string): StockEnVivo {
   const [estado, setEstado] = useState<StockEnVivo>({
     cargando: true,
@@ -27,31 +35,59 @@ export function useStockEnVivo(codigoLote: string): StockEnVivo {
 
   useEffect(() => {
     let cancelado = false;
-    fetch("/api/stock", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ codigos: [codigoLote] }),
-    })
-      .then((r) => (r.ok ? r.json() : { ok: false, stock: {} }))
-      .then(
-        (data: {
+    let enCurso = false;
+    // Un solo tropiezo de red (un poll perdido) no debe apagar el stock en
+    // vivo y caer al toggle manual — recién después de unos fallos
+    // seguidos se asume que el ERP realmente no está respondiendo.
+    let fallosSeguidos = 0;
+    const FALLOS_PARA_CAER = 3;
+
+    async function consultar() {
+      // Evita apilar consultas si una respuesta tarda más que el intervalo.
+      if (enCurso) return;
+      enCurso = true;
+      try {
+        const res = await fetch("/api/stock", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codigos: [codigoLote] }),
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        const data: {
           ok: boolean;
           stock: Record<string, { talla: string; cantidad: number }[]>;
-        }) => {
-          if (cancelado) return;
-          const filas = data.stock?.[codigoLote] || [];
-          setEstado({
-            cargando: false,
-            ok: !!data.ok,
-            porTalla: new Map(filas.map((f) => [f.talla, f.cantidad])),
-          });
+        } = await res.json();
+        if (cancelado) return;
+        if (!data.ok) throw new Error("ERP no disponible");
+        fallosSeguidos = 0;
+        const filas = data.stock?.[codigoLote] || [];
+        setEstado({
+          cargando: false,
+          ok: true,
+          porTalla: new Map(filas.map((f) => [f.talla, f.cantidad])),
+        });
+      } catch {
+        if (cancelado) return;
+        fallosSeguidos += 1;
+        if (fallosSeguidos >= FALLOS_PARA_CAER) {
+          setEstado({ cargando: false, ok: false, porTalla: new Map() });
+        } else {
+          setEstado((e) => ({ ...e, cargando: false }));
         }
-      )
-      .catch(() => {
-        if (!cancelado) setEstado({ cargando: false, ok: false, porTalla: new Map() });
-      });
+      } finally {
+        enCurso = false;
+      }
+    }
+
+    consultar();
+    const intervalo = setInterval(() => {
+      if (document.visibilityState === "visible") consultar();
+    }, INTERVALO_MS);
+
     return () => {
       cancelado = true;
+      clearInterval(intervalo);
     };
   }, [codigoLote]);
 

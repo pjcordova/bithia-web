@@ -111,6 +111,10 @@ export async function consultarStockErp(
       },
       body: JSON.stringify({ codigos: codigosLote }),
       signal: AbortSignal.timeout(5000),
+      // El stock cambia todo el tiempo (ventas en el POS, otras clientas
+      // comprando) — el Data Cache de Next.js cachearía este fetch por
+      // defecto si no se lo decimos explícitamente, y se vería viejo.
+      cache: "no-store",
     });
 
     if (!res.ok) return { ok: false, stock: {} };

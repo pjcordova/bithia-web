@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { consultarStockErp } from "@/lib/erp";
 
+// Se consulta cada segundo mientras alguien tiene una ficha de producto
+// abierta — nunca debe servir una respuesta cacheada.
+export const dynamic = "force-dynamic";
+
 /**
  * Puente entre el navegador de la clienta y el ERP: el navegador nunca
  * puede llamar al ERP directo (necesitaría la API key ahí, expuesta). Este
