@@ -1,16 +1,59 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BadgeCheck, Minus, Plus, ShoppingCart, Truck } from "lucide-react";
 import type { ProductoPublico } from "@/lib/productos";
 import { useCart } from "@/lib/cart-store";
 import { esNueva, formatSoles } from "@/lib/format";
 import { TALLAS } from "@/lib/categorias";
 
+/**
+ * Stock real por talla, consultado al ERP en vivo. `null` mientras carga o
+ * si el ERP no respondió — en ese caso se cae al toggle manual
+ * disponible/agotado (comportamiento de siempre), nunca se bloquea la
+ * compra por esto.
+ */
+function useStockEnVivo(codigoLote: string): Map<string, number> | null {
+  const [stock, setStock] = useState<Map<string, number> | null>(null);
+
+  useEffect(() => {
+    let cancelado = false;
+    fetch("/api/stock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ codigos: [codigoLote] }),
+    })
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((data: Record<string, { talla: string; cantidad: number }[]>) => {
+        if (cancelado) return;
+        const filas = data[codigoLote];
+        setStock(
+          Array.isArray(filas) && filas.length > 0
+            ? new Map(filas.map((f) => [f.talla, f.cantidad]))
+            : new Map()
+        );
+      })
+      .catch(() => {
+        if (!cancelado) setStock(new Map());
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, [codigoLote]);
+
+  return stock;
+}
+
 export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
   const { agregar } = useCart();
-  const agotado = !producto.disponible;
+  const stockEnVivo = useStockEnVivo(producto.codigo_lote);
+  // Sin datos del ERP (todavía cargando, o no configurado/no respondió):
+  // se cae al toggle manual de siempre. Con datos, manda el stock real.
+  const hayStockEnVivo = stockEnVivo !== null && stockEnVivo.size > 0;
+  const agotado = hayStockEnVivo
+    ? !producto.disponible || [...stockEnVivo.values()].every((c) => c <= 0)
+    : !producto.disponible;
 
   const [talla, setTalla] = useState<string | null>(
     producto.tallas.length === 1 ? producto.tallas[0] : null
@@ -90,8 +133,12 @@ export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
           <div className="mt-3 flex gap-3">
             {TALLAS.map((t) => {
               // Se muestran las tres tallas siempre; las que esta prenda no
-              // maneja quedan visibles pero deshabilitadas.
-              const existe = producto.tallas.includes(t);
+              // maneja (o no tienen stock real en el ERP) quedan visibles
+              // pero deshabilitadas.
+              const existeEnCatalogo = producto.tallas.includes(t);
+              const existe = hayStockEnVivo
+                ? existeEnCatalogo && (stockEnVivo!.get(t) || 0) > 0
+                : existeEnCatalogo;
               const activa = talla === t;
               return (
                 <button
@@ -115,6 +162,11 @@ export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
           </div>
           {!agotado && talla === null && (
             <p className="mt-2 text-xs text-rosa">Elige una talla para continuar.</p>
+          )}
+          {!agotado && talla !== null && hayStockEnVivo && (stockEnVivo!.get(talla) || 0) <= 2 && (
+            <p className="mt-2 text-xs font-semibold text-rosa">
+              ¡Últimas {stockEnVivo!.get(talla)} unidades en talla {talla}!
+            </p>
           )}
         </div>
 

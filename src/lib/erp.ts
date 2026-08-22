@@ -72,3 +72,42 @@ export async function notificarDescuentoStock(
     };
   }
 }
+
+export type StockPorTalla = { talla: string; cantidad: number };
+
+/**
+ * Stock real por código de lote, consultado en vivo al ERP — para que el
+ * catálogo muestre las mismas cantidades que ve la dueña en su panel, en
+ * vez de solo el toggle manual disponible/agotado.
+ *
+ * Solo lectura, server-side (nunca se llama desde el navegador de la
+ * clienta: la API key del ERP no puede viajar ahí). Si el ERP no está
+ * configurado, no responde a tiempo, o falla, se devuelve un mapa vacío —
+ * el catálogo cae de vuelta al toggle manual, nunca se rompe por esto.
+ */
+export async function consultarStockErp(
+  codigosLote: string[]
+): Promise<Record<string, StockPorTalla[]>> {
+  const url = process.env.ERP_STOCK_QUERY_URL;
+  const apiKey = process.env.ERP_STOCK_API_KEY;
+
+  if (!url || !apiKey || codigosLote.length === 0) return {};
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ codigos: codigosLote }),
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!res.ok) return {};
+    return await res.json();
+  } catch (e) {
+    console.error("[erp] no se pudo consultar stock:", e);
+    return {};
+  }
+}
