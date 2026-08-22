@@ -37,7 +37,8 @@ entre los dos proyectos — generen una cadena aleatoria larga y pónganla en el
   "items": [
     { "codigo_lote": "VES-2508-01", "talla": "M", "cantidad": 1 },
     { "codigo_lote": "TOP-2508-03", "talla": "S", "cantidad": 2 }
-  ]
+  ],
+  "metodo_pago": "yape"
 }
 ```
 
@@ -45,9 +46,22 @@ entre los dos proyectos — generen una cadena aleatoria larga y pónganla en el
   (formato `VES-2508-01`). Es el campo puente entre los dos sistemas.
 - `talla`: `"S"`, `"M"` o `"L"`.
 - `cantidad`: unidades de esa línea en el pedido.
+- `metodo_pago`: `"yape"`, `"plin"` o `"transferencia"` (BCP y BBVA llegan
+  ambos como `"transferencia"` — bithia-web no distingue el banco para el
+  ERP, solo el destino final del dinero).
 
 Un pedido puede traer varias líneas (varias prendas, o la misma prenda en
 tallas distintas).
+
+**Importante sobre `codigo_lote` y color:** en `bithia-web`, cada color de
+una prenda es un producto separado con su propio `codigo_lote`. Del lado del
+ERP, `productos.lote` puede agrupar varios colores bajo un mismo lote (si se
+recepcionaron juntos). Si el endpoint recibe un `codigo_lote` que en el ERP
+mapea a más de un color, no hay forma de saber cuál descontar sin ese dato —
+lo correcto es dejarlo para revisión manual en vez de adivinar. Esto es un
+caso real, no hipotético, así que conviene decidir cómo lo van a resolver
+(¿un lote = un color siempre, por convención? ¿bithia-web debería empezar a
+mandar el color?) antes de que el volumen de pedidos lo haga notorio.
 
 ### Respuesta esperada
 

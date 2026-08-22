@@ -302,7 +302,8 @@ function ModalPago({
                 codigo_lote: i.codigoLote,
                 talla: i.talla,
                 cantidad: i.cantidad,
-              }))
+              })),
+              metodoId
             );
             onEnviado();
           }}

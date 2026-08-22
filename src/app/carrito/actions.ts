@@ -1,6 +1,7 @@
 "use server";
 
 import { notificarDescuentoStock, type LineaDescuento } from "@/lib/erp";
+import type { MetodoPagoId } from "@/lib/pagos";
 
 /**
  * Se llama justo cuando la clienta envía el pedido por WhatsApp (ver
@@ -9,9 +10,10 @@ import { notificarDescuentoStock, type LineaDescuento } from "@/lib/erp";
  * revise, nunca se lanza un error hacia el cliente.
  */
 export async function registrarDescuentoStock(
-  lineas: LineaDescuento[]
+  lineas: LineaDescuento[],
+  metodoPago: MetodoPagoId
 ): Promise<void> {
-  const resultado = await notificarDescuentoStock(lineas);
+  const resultado = await notificarDescuentoStock(lineas, metodoPago);
   if (!resultado.ok) {
     console.error("[erp] no se pudo descontar stock automáticamente:", {
       motivo: resultado.motivo,
