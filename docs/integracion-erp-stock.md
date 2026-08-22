@@ -53,15 +53,16 @@ entre los dos proyectos — generen una cadena aleatoria larga y pónganla en el
 Un pedido puede traer varias líneas (varias prendas, o la misma prenda en
 tallas distintas).
 
-**Importante sobre `codigo_lote` y color:** en `bithia-web`, cada color de
-una prenda es un producto separado con su propio `codigo_lote`. Del lado del
-ERP, `productos.lote` puede agrupar varios colores bajo un mismo lote (si se
-recepcionaron juntos). Si el endpoint recibe un `codigo_lote` que en el ERP
-mapea a más de un color, no hay forma de saber cuál descontar sin ese dato —
-lo correcto es dejarlo para revisión manual en vez de adivinar. Esto es un
-caso real, no hipotético, así que conviene decidir cómo lo van a resolver
-(¿un lote = un color siempre, por convención? ¿bithia-web debería empezar a
-mandar el color?) antes de que el volumen de pedidos lo haga notorio.
+**Sobre `codigo_lote` y color (ya resuelto del lado del ERP):** en
+`bithia-web`, cada color de una prenda es un producto separado con su propio
+`codigo_lote`. Del lado del ERP, un producto puede agrupar varios colores
+bajo el mismo lote (si se recepcionaron juntos), así que el ERP ahora genera
+un código **por color** al recepcionar (ej. `TOP-2508-03-ROJO`), guardado en
+`producto_colores.codigo_lote`. `bithia-web` no tiene que cambiar nada: sigue
+mandando el mismo `codigo_lote` de siempre — el ERP es quien resuelve sin
+ambigüedad. Los productos recepcionados antes de esto siguen funcionando por
+el camino viejo (`productos.lote`), que sí puede ser ambiguo si agrupa más
+de un color; se resuelve solos en cuanto se vuelven a recepcionar.
 
 ### Respuesta esperada
 
@@ -82,15 +83,47 @@ descuento y procesen el resto de forma asíncrona de su lado.
 - `src/lib/erp.ts` — la función que arma y manda la petición.
 - `src/app/carrito/actions.ts` — la Server Action que se llama justo cuando
   se confirma el pedido (después de subir la captura de pago).
-- `.env.example` — ya tiene las dos variables documentadas:
+- `.env.example` — ya tiene las tres variables documentadas:
   - `ERP_STOCK_WEBHOOK_URL`
+  - `ERP_STOCK_QUERY_URL` (ver sección de stock en vivo, más abajo)
   - `ERP_STOCK_API_KEY`
 
 **No hace falta tocar nada más de este lado.** En cuanto el endpoint exista,
-solo hay que completar esas dos variables en el `.env` de producción
-(Vercel) y en el local, y el descuento automático empieza a funcionar solo —
-mientras tanto, con las variables vacías, el sistema sigue funcionando exacto
-igual que ahora (sin el aviso automático).
+solo hay que completar esas variables en el `.env` de producción (Vercel) y
+en el local, y el descuento automático empieza a funcionar solo — mientras
+tanto, con las variables vacías, el sistema sigue funcionando exacto igual
+que ahora (sin el aviso automático).
+
+## Stock en vivo en el catálogo (segundo endpoint, opcional)
+
+Además del descuento, `bithia-web` ahora puede mostrar el stock real por
+talla en la ficha de producto (en vez de solo el toggle manual
+disponible/agotado), consultando al ERP en el momento en que la clienta abre
+la página.
+
+```
+POST https://<tu-erp>.up.railway.app/api/productos/stock
+```
+
+Mismo header `Authorization: Bearer <API_KEY>` que el endpoint de descuento
+(es la misma key, no hace falta una segunda).
+
+**Cuerpo de la petición:**
+```json
+{ "codigos": ["TOP-2508-03-ROJO", "VES-2508-01"] }
+```
+
+**Respuesta esperada:**
+```json
+{
+  "TOP-2508-03-ROJO": [{ "talla": "M", "cantidad": 3 }],
+  "VES-2508-01": []
+}
+```
+Un código sin match devuelve array vacío, nunca un error — si el ERP no
+responde o no está configurado, `bithia-web` cae de vuelta al toggle manual,
+nunca se rompe la ficha de producto por esto. Mismo timeout de 5 segundos que
+el endpoint de descuento.
 
 ## Cómo probarlo de punta a punta
 
@@ -103,3 +136,7 @@ igual que ahora (sin el aviso automático).
 4. Revisar en el ERP que el stock de esa prenda/talla bajó.
 5. Si algo falla, el motivo queda en los logs del servidor de `bithia-web`
    (Vercel → proyecto → Logs), con las líneas del pedido incluidas.
+6. Para el stock en vivo: abrir la ficha de esa prenda en `bithia-web`,
+   confirmar que la talla sin stock aparece deshabilitada (o "Agotado" si no
+   queda ninguna), y que el aviso de "últimas unidades" aparece cuando quedan
+   2 o menos.
