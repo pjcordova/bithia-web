@@ -7,52 +7,16 @@ import type { ProductoPublico } from "@/lib/productos";
 import { useCart } from "@/lib/cart-store";
 import { esNueva, formatSoles } from "@/lib/format";
 import { TALLAS } from "@/lib/categorias";
-
-/**
- * Stock real por talla, consultado al ERP en vivo. `null` mientras carga o
- * si el ERP no respondió — en ese caso se cae al toggle manual
- * disponible/agotado (comportamiento de siempre), nunca se bloquea la
- * compra por esto.
- */
-function useStockEnVivo(codigoLote: string): Map<string, number> | null {
-  const [stock, setStock] = useState<Map<string, number> | null>(null);
-
-  useEffect(() => {
-    let cancelado = false;
-    fetch("/api/stock", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ codigos: [codigoLote] }),
-    })
-      .then((r) => (r.ok ? r.json() : {}))
-      .then((data: Record<string, { talla: string; cantidad: number }[]>) => {
-        if (cancelado) return;
-        const filas = data[codigoLote];
-        setStock(
-          Array.isArray(filas) && filas.length > 0
-            ? new Map(filas.map((f) => [f.talla, f.cantidad]))
-            : new Map()
-        );
-      })
-      .catch(() => {
-        if (!cancelado) setStock(new Map());
-      });
-    return () => {
-      cancelado = true;
-    };
-  }, [codigoLote]);
-
-  return stock;
-}
+import { useStockEnVivo } from "@/lib/useStockEnVivo";
 
 export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
   const { agregar } = useCart();
-  const stockEnVivo = useStockEnVivo(producto.codigo_lote);
-  // Sin datos del ERP (todavía cargando, o no configurado/no respondió):
-  // se cae al toggle manual de siempre. Con datos, manda el stock real.
-  const hayStockEnVivo = stockEnVivo !== null && stockEnVivo.size > 0;
-  const agotado = hayStockEnVivo
-    ? !producto.disponible || [...stockEnVivo.values()].every((c) => c <= 0)
+  const { ok, porTalla } = useStockEnVivo(producto.codigo_lote);
+  // Con ok=false (ERP caído, sin configurar, o no respondió a tiempo) se cae
+  // al toggle manual de siempre. Con ok=true, manda el stock real — incluso
+  // si el ERP no tiene este producto, eso significa agotado, no "no sabemos".
+  const agotado = ok
+    ? !producto.disponible || TALLAS.every((t) => (porTalla.get(t) || 0) <= 0)
     : !producto.disponible;
 
   const [talla, setTalla] = useState<string | null>(
@@ -62,6 +26,13 @@ export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
   // Confirmación en la misma página: ya no se redirige al carrito para que
   // la clienta pueda seguir agregando más prendas sin interrupciones.
   const [agregado, setAgregado] = useState(false);
+
+  // Con stock real disponible, no se puede pedir más de lo que hay. Sin él
+  // (ok=false), sin tope — comportamiento de siempre.
+  const maxCantidad = ok && talla ? Math.max(1, porTalla.get(talla) || 0) : Infinity;
+  useEffect(() => {
+    setCantidad((c) => Math.min(c, maxCantidad));
+  }, [maxCantidad]);
 
   const puedeAgregar = !agotado && talla !== null;
 
@@ -136,8 +107,8 @@ export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
               // maneja (o no tienen stock real en el ERP) quedan visibles
               // pero deshabilitadas.
               const existeEnCatalogo = producto.tallas.includes(t);
-              const existe = hayStockEnVivo
-                ? existeEnCatalogo && (stockEnVivo!.get(t) || 0) > 0
+              const existe = ok
+                ? existeEnCatalogo && (porTalla.get(t) || 0) > 0
                 : existeEnCatalogo;
               const activa = talla === t;
               return (
@@ -163,9 +134,9 @@ export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
           {!agotado && talla === null && (
             <p className="mt-2 text-xs text-rosa">Elige una talla para continuar.</p>
           )}
-          {!agotado && talla !== null && hayStockEnVivo && (stockEnVivo!.get(talla) || 0) <= 2 && (
+          {!agotado && talla !== null && ok && (porTalla.get(talla) || 0) <= 2 && (
             <p className="mt-2 text-xs font-semibold text-rosa">
-              ¡Últimas {stockEnVivo!.get(talla)} unidades en talla {talla}!
+              ¡Últimas {porTalla.get(talla)} unidades en talla {talla}!
             </p>
           )}
         </div>
@@ -189,8 +160,9 @@ export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
             </span>
             <button
               type="button"
-              onClick={() => setCantidad((c) => c + 1)}
-              className="text-carbon-suave transition hover:text-terracota"
+              onClick={() => setCantidad((c) => Math.min(maxCantidad, c + 1))}
+              disabled={cantidad >= maxCantidad}
+              className="text-carbon-suave transition hover:text-terracota disabled:opacity-30"
               aria-label="Agregar una unidad"
             >
               <Plus size={16} />

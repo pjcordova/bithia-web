@@ -7,8 +7,9 @@ import { consultarStockErp } from "@/lib/erp";
  * endpoint corre en el servidor de bithia-web, que sí la tiene.
  *
  * Body: { "codigos": ["TOP-2508-03-ROJO"] }
- * Nunca falla de forma visible: si el ERP no responde, se devuelve vacío y
- * la interfaz cae al toggle manual disponible/agotado.
+ * Respuesta: { "ok": boolean, "stock": { "...codigo...": [{talla,cantidad}] } }
+ * Nunca falla de forma visible: si el ERP no responde, ok sale false y la
+ * interfaz cae al toggle manual disponible/agotado.
  */
 export async function POST(request: NextRequest) {
   let body: { codigos?: string[] };
@@ -22,6 +23,6 @@ export async function POST(request: NextRequest) {
     ? body.codigos.filter((c): c is string => typeof c === "string" && c.length > 0)
     : [];
 
-  const stock = await consultarStockErp(codigos);
-  return NextResponse.json(stock);
+  const resultado = await consultarStockErp(codigos);
+  return NextResponse.json(resultado);
 }

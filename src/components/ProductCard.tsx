@@ -1,11 +1,20 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import type { ProductoPublico } from "@/lib/productos";
 import { esNueva, formatSoles } from "@/lib/format";
 import { PuntoColor } from "@/components/PuntoColor";
+import { TALLAS } from "@/lib/categorias";
+import { useStockEnVivo } from "@/lib/useStockEnVivo";
 
 export function ProductCard({ producto }: { producto: ProductoPublico }) {
-  const agotado = !producto.disponible;
+  const { ok, porTalla } = useStockEnVivo(producto.codigo_lote);
+  // Con ok=true el ERP manda: si no tiene este producto (o está en cero en
+  // todas las tallas), es agotado de verdad — no solo "no sabemos".
+  const agotado = ok
+    ? !producto.disponible || TALLAS.every((t) => (porTalla.get(t) || 0) <= 0)
+    : !producto.disponible;
   const nueva = !agotado && esNueva(producto.created_at);
 
   return (
