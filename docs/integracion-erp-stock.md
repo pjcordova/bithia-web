@@ -1,5 +1,11 @@
 # Integración con el ERP: descuento automático de stock
 
+> **¿Vas a pasar esto a producción?** La guía paso a paso (migración SQL,
+> variables de entorno en Railway/Vercel, verificación) está en
+> `docs/desplegar-produccion.md` del repo del ERP (`bithia-ecommerce-pro`),
+> con un prompt listo para pegarle a Claude si lo vas a usar para ese
+> despliegue.
+
 ## Por qué
 
 `bithia-web` es un proyecto independiente del ERP: base de datos propia, sin
