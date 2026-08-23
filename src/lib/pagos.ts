@@ -65,4 +65,13 @@ export const METODOS_PAGO: Record<MetodoPagoId, MetodoPago> = {
   },
 };
 
-export const ORDEN_METODOS: MetodoPagoId[] = ["yape", "plin", "bcp", "bbva"];
+/**
+ * Métodos que la clienta ve, en orden. BCP y BBVA están fuera a propósito:
+ * sus CCI de METODOS_PAGO todavía son inventados y mostrarlos en producción
+ * haría que alguien transfiera a una cuenta que no es de Bithia.
+ *
+ * Para reactivarlos: reemplazar los dos CCI por los reales de Geraldine y
+ * devolver "bcp" y "bbva" a esta lista. No hace falta tocar nada más — el
+ * modal de pago se arma solo a partir de acá.
+ */
+export const ORDEN_METODOS: MetodoPagoId[] = ["yape", "plin"];
