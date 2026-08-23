@@ -71,7 +71,9 @@ export default async function HomePage() {
               Todavía no hay prendas publicadas. Vuelve pronto.
             </p>
           ) : (
-            <div className="mt-8 grid grid-cols-2 gap-4">
+            // Son exactamente 4 prendas (listarNovedades(4)): 2x2 en celular y
+            // una fila de 4 en desktop, sin que quede ninguna huérfana.
+            <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
               {novedades.map((p) => (
                 <ProductCard key={p.id} producto={p} />
               ))}
