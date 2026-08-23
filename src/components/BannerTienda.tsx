@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { TIENDA } from "@/lib/contenido";
+import { obtenerTienda, type Tienda } from "@/lib/tienda";
 
 /**
  * Foto ancha del local con un botón encima.
@@ -7,8 +7,21 @@ import { TIENDA } from "@/lib/contenido";
  * Cierra la portada con la prueba de que detrás de la web hay una tienda real
  * en la que te puedes probar la ropa — que para una boutique de galería es el
  * argumento más fuerte que tiene.
+ *
+ * Se parte en dos porque el panel de administración es un componente de
+ * cliente y no puede renderizar uno asíncrono: allá se usa <BannerTiendaVista>
+ * con los datos ya cargados por la página.
  */
-export function BannerTienda() {
+export async function BannerTienda() {
+  const tienda = await obtenerTienda();
+  return <BannerTiendaVista tienda={tienda} />;
+}
+
+export function BannerTiendaVista({ tienda }: { tienda: Tienda }) {
+  // Sin foto del stand la sección no se muestra: un banner vacío o con una
+  // imagen prestada resta más de lo que suma.
+  if (!tienda.foto_url) return null;
+
   return (
     <section className="relative mt-20" aria-label="Nuestra tienda">
       {/* 38rem es la misma altura que las bandas de edición limitada y recién
@@ -16,8 +29,8 @@ export function BannerTienda() {
           una familia y no como tres tamaños sueltos. */}
       <div className="relative h-[26rem] w-full overflow-hidden md:h-[38rem]">
         <Image
-          src={TIENDA.foto}
-          alt={`Stand de Bithia Brand en ${TIENDA.nombre}, ${TIENDA.ciudad}`}
+          src={tienda.foto_url}
+          alt={`Stand de Bithia Brand en ${tienda.nombre}, ${tienda.ciudad}`}
           fill
           sizes="100vw"
           className="object-cover"
@@ -27,7 +40,7 @@ export function BannerTienda() {
 
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-4 text-center">
           <a
-            href={TIENDA.mapa}
+            href={tienda.mapa_url}
             target="_blank"
             rel="noopener noreferrer"
             className="bg-carbon px-10 py-3.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-carbon/85"
@@ -35,7 +48,7 @@ export function BannerTienda() {
             Visítanos
           </a>
           <p className="text-sm font-medium text-white drop-shadow">
-            {TIENDA.nombre} · {TIENDA.ciudad}
+            {tienda.nombre} · {tienda.ciudad}
           </p>
         </div>
       </div>

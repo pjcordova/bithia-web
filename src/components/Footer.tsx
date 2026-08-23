@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Instagram, MapPin, MessageCircle } from "lucide-react";
 import { linkWhatsAppContacto, numeroWhatsApp } from "@/lib/whatsapp";
 import { CATEGORIAS } from "@/lib/categorias";
-import { ENLACES_LEGALES, INSTAGRAM_URL, TIENDA } from "@/lib/contenido";
+import { ENLACES_LEGALES, INSTAGRAM_URL } from "@/lib/contenido";
+import { obtenerTienda } from "@/lib/tienda";
 
 /** Muestra el número tal como se marca en Perú: 999 999 999. */
 function numeroLegible(): string | null {
@@ -12,7 +13,11 @@ function numeroLegible(): string | null {
   return `${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`;
 }
 
-export function Footer() {
+export async function Footer() {
+  // El pie sale en todas las páginas: los datos del local se leen acá para no
+  // tener que pasárselos desde cada una.
+  const tienda = await obtenerTienda();
+
   const telefono = numeroLegible();
 
   return (
@@ -91,14 +96,14 @@ export function Footer() {
               <li className="flex gap-2.5">
                 <MapPin size={16} className="mt-0.5 shrink-0" aria-hidden />
                 <a
-                  href={TIENDA.mapa}
+                  href={tienda.mapa_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="transition hover:text-terracota"
                 >
-                  {TIENDA.nombre}
+                  {tienda.nombre}
                   <br />
-                  {TIENDA.ciudad}
+                  {tienda.ciudad}
                 </a>
               </li>
               {telefono && (

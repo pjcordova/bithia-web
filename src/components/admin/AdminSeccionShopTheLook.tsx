@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Pencil } from "lucide-react";
 import type { ProductoAdmin } from "@/components/admin/ProductForm";
 import { AdminProductCard } from "@/components/admin/AdminProductCard";
 import { SeccionVacia } from "@/components/admin/AdminSeccionDestacados";
@@ -10,6 +11,7 @@ export type AdminLookItem = {
 };
 
 export type AdminLook = {
+  id: string;
   titulo: string;
   etiqueta: string | null;
   imagen_url: string;
@@ -17,17 +19,19 @@ export type AdminLook = {
 };
 
 /**
- * Versión admin de <SeccionShopTheLook>. La foto y los puntos de ubicación
- * quedan solo de referencia (armar o mover un "look" es una función aparte,
- * todavía no construida); cada prenda de la lista sí es editable como en el
- * resto de secciones. Mismo layout de dos columnas que la portada.
+ * Versión admin de <SeccionShopTheLook>. La foto grande y los textos se editan
+ * con el botón de la esquina; cada prenda de la lista es editable como en el
+ * resto de secciones. Mover los puntos sobre la foto sigue siendo una función
+ * aparte. Mismo layout de dos columnas que la portada.
  */
 export function AdminSeccionShopTheLook({
   look,
   onEditar,
+  onEditarLook,
 }: {
   look: AdminLook | null;
   onEditar: (producto: ProductoAdmin) => void;
+  onEditarLook: (look: AdminLook) => void;
 }) {
   if (!look || look.items.length === 0) {
     return (
@@ -66,6 +70,17 @@ export function AdminSeccionShopTheLook({
               sizes="(max-width: 768px) 100vw, 55vw"
               className="object-cover"
             />
+
+            {/* Sobre la foto y no debajo: es la única forma de que se entienda
+                que edita esta foto y no la sección entera. */}
+            <button
+              type="button"
+              onClick={() => onEditarLook(look)}
+              className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-white/95 px-3.5 py-2 text-xs font-bold text-carbon shadow-md transition hover:bg-white"
+            >
+              <Pencil size={14} aria-hidden />
+              Editar foto
+            </button>
             {look.items.map((it, i) =>
               it.posX !== null && it.posY !== null ? (
                 <span

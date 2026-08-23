@@ -294,6 +294,88 @@ export async function eliminarSlide(formData: FormData): Promise<void> {
   refrescarVistas();
 }
 
+export type TiendaState = { error?: string; ok?: boolean };
+
+/**
+ * Datos del local que se ven en el banner del final de la portada y en el pie
+ * de todas las páginas. Es una tabla de una sola fila: si todavía no existe se
+ * crea, y a partir de ahí se actualiza.
+ */
+export async function guardarTienda(
+  _prev: TiendaState,
+  formData: FormData
+): Promise<TiendaState> {
+  await exigirSesion();
+
+  const nombre = String(formData.get("nombre") ?? "").trim();
+  const ciudad = String(formData.get("ciudad") ?? "").trim();
+  const mapa = String(formData.get("mapa_url") ?? "").trim();
+  const foto = String(formData.get("foto_url") ?? "").trim();
+
+  if (!nombre) return { error: "Escribe el nombre del local." };
+  if (!ciudad) return { error: "Escribe la ciudad." };
+  if (!/^https?:\/\//.test(mapa)) {
+    return { error: "El enlace del mapa debe empezar con https://" };
+  }
+  if (foto && !foto.startsWith("https://res.cloudinary.com/")) {
+    return { error: "La foto no se subió correctamente. Intenta de nuevo." };
+  }
+
+  const datos = {
+    nombre,
+    ciudad,
+    mapa_url: mapa,
+    foto_url: foto || null,
+  };
+
+  const existente = await prisma.tienda.findFirst({ select: { id: true } });
+  if (existente) {
+    await prisma.tienda.update({ where: { id: existente.id }, data: datos });
+  } else {
+    await prisma.tienda.create({ data: datos });
+  }
+
+  refrescarVistas();
+  return { ok: true };
+}
+
+export type LookState = { error?: string; ok?: boolean };
+
+/**
+ * Edita la foto grande y los textos del "Shop the look" (la sección Chic
+ * Style de la portada). Las prendas asociadas y la posición de sus puntos
+ * sobre la foto se siguen administrando aparte.
+ */
+export async function actualizarLook(
+  _prev: LookState,
+  formData: FormData
+): Promise<LookState> {
+  await exigirSesion();
+
+  const id = String(formData.get("id") ?? "");
+  if (!id) return { error: "Falta el identificador del look." };
+
+  const titulo = String(formData.get("titulo") ?? "").trim();
+  const etiqueta = String(formData.get("etiqueta") ?? "").trim();
+  const imagen = String(formData.get("imagen_url") ?? "").trim();
+
+  if (!titulo) return { error: "Escribe el título de la sección." };
+  // A diferencia de las diapositivas del hero, acá la foto no es opcional: la
+  // sección entera se construye sobre ella y sin foto no se muestra nada.
+  if (!imagen) return { error: "Esta sección necesita una foto." };
+  if (!imagen.startsWith("https://res.cloudinary.com/")) {
+    return { error: "La foto no se subió correctamente. Intenta de nuevo." };
+  }
+
+  await prisma.looks.update({
+    where: { id },
+    data: { titulo, etiqueta: etiqueta || null, imagen_url: imagen },
+  });
+
+  refrescarVistas();
+  return { ok: true };
+}
+
 function esCodigoDuplicado(e: unknown): boolean {
   return (
     typeof e === "object" &&

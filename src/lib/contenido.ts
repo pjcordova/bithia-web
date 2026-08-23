@@ -45,13 +45,21 @@ export const HERO_INTERVALO_MS = 6000;
 // Tienda física
 // ---------------------------------------------------------------------------
 
-export const TIENDA = {
+/**
+ * Valores de arranque del local. Los reales viven en la tabla `tienda` y se
+ * editan desde el panel (ver lib/tienda.ts); esto es solo el respaldo para
+ * cuando esa fila todavía no existe o la base no responde.
+ *
+ * La foto arranca vacía a propósito: es preferible que el banner del local no
+ * se muestre a que salga con una imagen de muestra que no es el stand.
+ */
+export const TIENDA_POR_DEFECTO = {
   nombre: "Polvos Azules (Stand 170)",
   ciudad: "Ica, Perú",
-  /** TODO: reemplazar por una foto real del stand de Bithia. */
-  foto: "https://res.cloudinary.com/rrh7xuqq/image/upload/samples/people/kitchen-bar.jpg",
+  foto_url: null as string | null,
   /** Búsqueda en Maps: el stand no tiene punto propio, la galería sí. */
-  mapa: "https://www.google.com/maps/search/?api=1&query=Polvos+Azules+Ica+Per%C3%BA",
+  mapa_url:
+    "https://www.google.com/maps/search/?api=1&query=Polvos+Azules+Ica+Per%C3%BA",
 };
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { LogOut, Plus } from "lucide-react";
+import { LogOut, Pencil, Plus } from "lucide-react";
 import { ProductForm, type ProductoAdmin } from "@/components/admin/ProductForm";
 import { AdminSeccionDestacados } from "@/components/admin/AdminSeccionDestacados";
 import { AdminSeccionCategorias } from "@/components/admin/AdminSeccionCategorias";
@@ -14,24 +14,29 @@ import {
 } from "@/components/admin/AdminSeccionShopTheLook";
 import { AdminHero } from "@/components/admin/AdminHero";
 import { SlideForm } from "@/components/admin/SlideForm";
+import { LookForm } from "@/components/admin/LookForm";
+import { TiendaForm } from "@/components/admin/TiendaForm";
 import { BandaMarquesina } from "@/components/BandaMarquesina";
-import { BannerTienda } from "@/components/BannerTienda";
+import { BannerTiendaVista } from "@/components/BannerTienda";
 import { FranjaGarantias } from "@/components/FranjaGarantias";
 import { MARQUESINA_SECUNDARIA, MARQUESINA_TERCERA } from "@/lib/contenido";
 import { cerrarSesion } from "@/app/admin/login/actions";
 import type { CategoriaDestacada } from "@/lib/productos";
 import type { HeroSlide } from "@/lib/hero";
+import type { Tienda } from "@/lib/tienda";
 
 export function AdminDashboard({
   productos,
   categorias,
   look,
   slides,
+  tienda,
 }: {
   productos: ProductoAdmin[];
   categorias: CategoriaDestacada[];
   look: AdminLook | null;
   slides: HeroSlide[];
+  tienda: Tienda;
 }) {
   // null = formulario cerrado; undefined = abierto en modo "agregar".
   const [editando, setEditando] = useState<ProductoAdmin | undefined | null>(
@@ -40,6 +45,8 @@ export function AdminDashboard({
   const [editandoSlide, setEditandoSlide] = useState<
     HeroSlide | undefined | null
   >(null);
+  const [editandoLook, setEditandoLook] = useState<AdminLook | null>(null);
+  const [editandoTienda, setEditandoTienda] = useState<Tienda | null>(null);
 
   // Mismos recortes que arma la home pública (lib/productos.ts), pero sin el
   // filtro de visible_en_tienda: acá la dueña necesita ver y poder reactivar
@@ -143,10 +150,26 @@ export function AdminDashboard({
 
         <BandaMarquesina mensaje={MARQUESINA_TERCERA} className="mt-0" />
 
-        <AdminSeccionShopTheLook look={look} onEditar={setEditando} />
+        <AdminSeccionShopTheLook
+          look={look}
+          onEditar={setEditando}
+          onEditarLook={setEditandoLook}
+        />
 
+        {/* La foto del stand sí se edita; la franja de garantías es texto fijo
+            del sitio y se muestra solo como referencia. */}
+        <div className="relative">
+          <BannerTiendaVista tienda={tienda} />
+          <button
+            type="button"
+            onClick={() => setEditandoTienda(tienda)}
+            className="absolute right-4 top-4 z-10 flex items-center gap-1.5 rounded-full bg-white/95 px-3.5 py-2 text-xs font-bold text-carbon shadow-md transition hover:bg-white"
+          >
+            <Pencil size={14} aria-hidden />
+            {tienda.foto_url ? "Editar la tienda" : "Agregar foto del local"}
+          </button>
+        </div>
         <div className="pointer-events-none opacity-95">
-          <BannerTienda />
           <FranjaGarantias />
         </div>
 
@@ -168,6 +191,15 @@ export function AdminDashboard({
         <SlideForm
           slide={editandoSlide}
           onCerrar={() => setEditandoSlide(null)}
+        />
+      )}
+      {editandoLook !== null && (
+        <LookForm look={editandoLook} onCerrar={() => setEditandoLook(null)} />
+      )}
+      {editandoTienda !== null && (
+        <TiendaForm
+          tienda={editandoTienda}
+          onCerrar={() => setEditandoTienda(null)}
         />
       )}
     </div>

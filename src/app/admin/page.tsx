@@ -6,6 +6,7 @@ import type { AdminLook } from "@/components/admin/AdminSeccionShopTheLook";
 import type { CategoriaDestacada } from "@/lib/productos";
 import { NOMBRES_CATEGORIA } from "@/lib/categorias";
 import { listarSlidesAdmin } from "@/lib/hero";
+import { obtenerTienda } from "@/lib/tienda";
 
 export const metadata: Metadata = {
   title: "Mi Catálogo",
@@ -122,6 +123,7 @@ async function obtenerLookAdmin(): Promise<AdminLook | null> {
   if (!look || look.items.length === 0) return null;
 
   return {
+    id: look.id,
     titulo: look.titulo,
     etiqueta: look.etiqueta,
     imagen_url: look.imagen_url,
@@ -134,13 +136,14 @@ async function obtenerLookAdmin(): Promise<AdminLook | null> {
 }
 
 export default async function AdminPage() {
-  const [filas, look, slides] = await Promise.all([
+  const [filas, look, slides, tienda] = await Promise.all([
     prisma.productos.findMany({
       orderBy: { created_at: "desc" },
       include: { tallas: tallasSelect },
     }),
     obtenerLookAdmin(),
     listarSlidesAdmin(),
+    obtenerTienda(),
   ]);
 
   const productos = filas.map(mapearProducto);
@@ -152,6 +155,7 @@ export default async function AdminPage() {
       categorias={categorias}
       look={look}
       slides={slides}
+      tienda={tienda}
     />
   );
 }

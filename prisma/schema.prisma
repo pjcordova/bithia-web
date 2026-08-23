@@ -119,6 +119,21 @@ model tallas {
   @@index([producto_id])
 }
 
+// Datos del local físico: foto del stand, cómo se llama y dónde queda.
+// Antes vivían fijos en código (lib/contenido.ts) y aparecían repetidos en
+// media docena de archivos, así que corregir la dirección obligaba a un
+// cambio de código. Es una tabla de una sola fila: se lee con findFirst.
+model tienda {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre     String
+  ciudad     String
+  // Sin foto, el banner del local no se muestra en vez de salir roto.
+  foto_url   String?
+  // Búsqueda en Maps, no un punto exacto: el stand no tiene ficha propia.
+  mapa_url   String
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+}
+
 // Diapositivas del carrusel grande de portada. Antes vivían fijas en código
 // (lib/contenido.ts); pasan a la base para que la dueña las edite desde el
 // panel sin pedirle un cambio de código a nadie.
