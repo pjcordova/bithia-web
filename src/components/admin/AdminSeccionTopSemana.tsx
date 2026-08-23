@@ -40,28 +40,65 @@ export function AdminSeccionTopSemana({
       </h2>
 
       <div className="mx-auto mt-10 grid max-w-6xl gap-10 px-4 md:grid-cols-2 md:gap-14">
-        <button
-          type="button"
-          onClick={() => onEditar(producto)}
-          aria-label={`Editar ${producto.nombre}`}
-          className="group relative aspect-[3/4] overflow-hidden rounded-tarjeta bg-rosa-suave/25 md:min-h-[520px]"
-        >
-          {producto.imagen_url && (
-            <Image
-              src={producto.imagen_url}
-              alt={producto.nombre}
-              fill
-              sizes="(max-width: 768px) 100vw, 45vw"
-              className={`object-cover ${!producto.disponible ? "opacity-50 grayscale" : ""}`}
-            />
+        {/* La portada muestra acá una galería (foto principal + adicionales).
+            El panel enseña las mismas para que se vea de un vistazo cuántas
+            hay: mostrando solo la principal, las adicionales quedaban
+            invisibles y parecía que no se podían cambiar. */}
+        <div>
+          <button
+            type="button"
+            onClick={() => onEditar(producto)}
+            aria-label={`Editar ${producto.nombre}`}
+            className="group relative block aspect-[3/4] w-full overflow-hidden rounded-tarjeta bg-rosa-suave/25 md:min-h-[520px]"
+          >
+            {producto.imagen_url && (
+              <Image
+                src={producto.imagen_url}
+                alt={producto.nombre}
+                fill
+                sizes="(max-width: 768px) 100vw, 45vw"
+                className={`object-cover ${!producto.disponible ? "opacity-50 grayscale" : ""}`}
+              />
+            )}
+            <div className="absolute inset-0 flex items-center justify-center bg-carbon/0 opacity-0 transition group-hover:bg-carbon/30 group-hover:opacity-100">
+              <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-carbon shadow">
+                <Pencil size={13} />
+                Editar
+              </span>
+            </div>
+          </button>
+
+          {producto.imagenes.length > 0 && (
+            <>
+              <div className="mt-3 grid grid-cols-4 gap-2">
+                {producto.imagenes.map((url, i) => (
+                  <button
+                    key={`${url}-${i}`}
+                    type="button"
+                    onClick={() => onEditar(producto)}
+                    aria-label={`Editar las fotos de ${producto.nombre}`}
+                    className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-rosa-suave/25"
+                  >
+                    <Image
+                      src={url}
+                      alt={`Foto ${i + 2} de ${producto.nombre}`}
+                      fill
+                      sizes="120px"
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-carbon/0 opacity-0 transition group-hover:bg-carbon/40 group-hover:opacity-100">
+                      <Pencil size={14} className="text-white" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-center text-[11px] text-carbon-suave">
+                {producto.imagenes.length + 1} fotos en la galería. Se cambian
+                en “Fotos adicionales”, dentro de la prenda.
+              </p>
+            </>
           )}
-          <div className="absolute inset-0 flex items-center justify-center bg-carbon/0 opacity-0 transition group-hover:bg-carbon/30 group-hover:opacity-100">
-            <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-carbon shadow">
-              <Pencil size={13} />
-              Editar
-            </span>
-          </div>
-        </button>
+        </div>
 
         <div className="md:pt-4">
           <h3 className="text-lg font-medium uppercase tracking-[0.1em] text-carbon md:text-xl">
