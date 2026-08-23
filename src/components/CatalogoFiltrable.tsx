@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import type { ProductoPublico } from "@/lib/productos";
@@ -22,17 +22,33 @@ export function CatalogoFiltrable({
 }: {
   productos: ProductoPublico[];
 }) {
-  // El desplegable del header enlaza a /catalogo?categoria=Vestidos, así que
-  // la pestaña correcta tiene que venir ya marcada al aterrizar.
+  // La categoría se lee de la URL en cada render, no se guarda en estado: el
+  // desplegable del header enlaza a /catalogo?categoria=Vestidos, y estando ya
+  // dentro del catálogo esa navegación no vuelve a montar este componente. Con
+  // useState el valor inicial quedaba congelado y la lista no se filtraba —
+  // había que elegir la categoría a mano en la fila de pestañas.
   const params = useSearchParams();
-  const categoriaInicial = params.get("categoria");
+  const router = useRouter();
+  const categoriaUrl = params.get("categoria");
+  const categoria =
+    categoriaUrl && NOMBRES_CATEGORIA.includes(categoriaUrl)
+      ? categoriaUrl
+      : TODAS;
+
+  // Las pestañas escriben en la URL en vez de en un estado propio, para que
+  // menú y pestañas no puedan contradecirse. replace y no push: filtrar no
+  // debería llenar el historial de pasos atrás.
+  const elegirCategoria = useCallback(
+    (c: string) => {
+      router.replace(
+        c === TODAS ? "/catalogo" : `/catalogo?categoria=${encodeURIComponent(c)}`,
+        { scroll: false }
+      );
+    },
+    [router]
+  );
 
   const [busqueda, setBusqueda] = useState("");
-  const [categoria, setCategoria] = useState<string>(
-    categoriaInicial && NOMBRES_CATEGORIA.includes(categoriaInicial)
-      ? categoriaInicial
-      : TODAS
-  );
   const [talla, setTalla] = useState<string | null>(null);
 
   // Solo se ofrecen las categorías que realmente tienen prendas publicadas.
@@ -86,7 +102,7 @@ export function CatalogoFiltrable({
               type="button"
               role="tab"
               aria-selected={categoria === c}
-              onClick={() => setCategoria(c)}
+              onClick={() => elegirCategoria(c)}
               className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition ${
                 categoria === c
                   ? "bg-terracota text-white"
