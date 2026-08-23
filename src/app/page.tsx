@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
@@ -27,6 +28,26 @@ import { listarSlidesPublicos } from "@/lib/hero";
 // El catálogo cambia cada ~15 días; revalidar cada hora evita golpear Neon en
 // cada visita sin que la dueña tenga que esperar un despliegue.
 export const revalidate = 3600;
+
+/**
+ * La vista previa del enlace usa la foto de la primera diapositiva del hero.
+ *
+ * Casi todo el tráfico de Bithia llega por un enlace pegado en WhatsApp o en
+ * Instagram, y sin imagen ese enlace sale como texto suelto. Se toma del hero
+ * en vez de fijar un archivo para que la dueña la cambie desde el panel junto
+ * con la portada, sin pedir un despliegue.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const slides = await listarSlidesPublicos();
+  const foto = slides.find((s) => s.imagen_url)?.imagen_url;
+  if (!foto) return {};
+
+  return {
+    openGraph: {
+      images: [{ url: foto, width: 1200, height: 630, alt: "Bithia Brand" }],
+    },
+  };
+}
 
 export default async function HomePage() {
   const [slides, novedades, destacados, categorias, edicionLimitada, topSemana, bannerInferior, look] =
