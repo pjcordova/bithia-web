@@ -44,7 +44,15 @@ export default async function HomePage() {
   return (
     <>
       <Header />
-      <main>
+      {/* overflow-x-clip por el carrusel de "Los más pedidos": aunque su pista
+          tiene overflow-x-auto y se desplaza sola, el ancho de sus tarjetas
+          igual inflaba el scroll horizontal del documento — en celular la
+          portada entera se corría al arrastrar el dedo y aparecía una franja
+          en blanco. Se recorta acá y no en la sección porque las flechas del
+          carrusel cuelgan 20px fuera de ella y quedarían cortadas.
+          Es clip y no hidden: no crea contenedor de scroll, así que no rompe
+          el position:sticky de nada que viva dentro. */}
+      <main className="overflow-x-clip">
         {/* Hero, mosaicos y banda van a sangre completa: el ancho máximo se
             aplica por sección, no al <main>, para que la foto de portada
             llegue a los dos bordes también en desktop. */}
