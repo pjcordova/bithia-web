@@ -1,20 +1,19 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import type { ProductoPublico } from "@/lib/productos";
 import { esNueva, formatSoles } from "@/lib/format";
 import { PuntoColor } from "@/components/PuntoColor";
-import { TALLAS } from "@/lib/categorias";
-import { useStockEnVivo } from "@/lib/useStockEnVivo";
 
+/**
+ * La tarjeta se repite en las grillas (portada y catálogo), así que a
+ * propósito NO consulta stock al ERP: una consulta por tarjeta multiplicada
+ * por cada visitante que solo está mirando saturaría el ERP sin que nadie
+ * esté por comprar. Acá manda el toggle manual disponible/agotado; el stock
+ * real se consulta en la ficha del producto y en el carrito, que es donde la
+ * clienta ya eligió qué llevar.
+ */
 export function ProductCard({ producto }: { producto: ProductoPublico }) {
-  const { ok, porTalla } = useStockEnVivo(producto.codigo_lote);
-  // Con ok=true el ERP manda: si no tiene este producto (o está en cero en
-  // todas las tallas), es agotado de verdad — no solo "no sabemos".
-  const agotado = ok
-    ? !producto.disponible || TALLAS.every((t) => (porTalla.get(t) || 0) <= 0)
-    : !producto.disponible;
+  const agotado = !producto.disponible;
   const nueva = !agotado && esNueva(producto.created_at);
 
   return (

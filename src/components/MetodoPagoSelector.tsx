@@ -15,9 +15,15 @@ import { registrarDescuentoStock } from "@/app/carrito/actions";
  */
 export function MetodoPagoSelector({
   items,
+  bloqueado,
+  revalidarStock,
   onPedidoEnviado,
 }: {
   items: CartItem[];
+  /** true si alguna línea del carrito ya no tiene stock suficiente. */
+  bloqueado: boolean;
+  /** Vuelve a preguntarle al ERP; se llama al abrir el modal de pago. */
+  revalidarStock: () => void;
   onPedidoEnviado: () => void;
 }) {
   const [mostrarMetodos, setMostrarMetodos] = useState(false);
@@ -29,10 +35,11 @@ export function MetodoPagoSelector({
         <button
           type="button"
           onClick={() => setMostrarMetodos(true)}
+          disabled={bloqueado}
           // Mismo tono que el título "Tu Carrito", con el gris carbón de la
           // paleta al pasar el cursor — así el CTA principal se lee como una
           // extensión del encabezado de la página.
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-terracota-oscuro py-4 text-sm font-bold text-white transition hover:bg-carbon"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-terracota-oscuro py-4 text-sm font-bold text-white transition hover:bg-carbon disabled:pointer-events-none disabled:opacity-40"
         >
           Continuar compra
         </button>
@@ -60,6 +67,8 @@ export function MetodoPagoSelector({
         <ModalPago
           metodoId={metodoActivo}
           items={items}
+          bloqueado={bloqueado}
+          revalidarStock={revalidarStock}
           onCerrar={() => setMetodoActivo(null)}
           onEnviado={onPedidoEnviado}
         />
@@ -71,11 +80,15 @@ export function MetodoPagoSelector({
 function ModalPago({
   metodoId,
   items,
+  bloqueado,
+  revalidarStock,
   onCerrar,
   onEnviado,
 }: {
   metodoId: MetodoPagoId;
   items: CartItem[];
+  bloqueado: boolean;
+  revalidarStock: () => void;
   onCerrar: () => void;
   onEnviado: () => void;
 }) {
@@ -99,6 +112,13 @@ function ModalPago({
       // respaldo manual abajo.
     }
   }, [metodo.deepLink]);
+
+  // Última verificación antes de que pague: entre que armó el carrito y llegó
+  // acá pudieron venderse esas unidades en el mostrador. Es una sola consulta,
+  // en el momento en que de verdad importa.
+  useEffect(() => {
+    revalidarStock();
+  }, [revalidarStock]);
 
   useEffect(() => {
     function onEsc(e: KeyboardEvent) {
@@ -169,6 +189,10 @@ function ModalPago({
     metodo,
     comprobanteUrl: comprobanteUrl ?? undefined,
   });
+
+  // Hace falta el comprobante y que el stock siga alcanzando: la revalidación
+  // de arriba puede haber encontrado que algo se agotó recién.
+  const puedeEnviar = Boolean(comprobanteUrl) && !bloqueado;
 
   return (
     <div
@@ -284,13 +308,23 @@ function ModalPago({
           )}
         </div>
 
+        {bloqueado && (
+          <p
+            role="alert"
+            className="mt-5 rounded-lg bg-rosa-suave/60 p-3 text-center text-xs font-semibold text-terracota-oscuro"
+          >
+            Se acaba de agotar una de las prendas de tu pedido. Cierra esta
+            ventana y ajusta tu carrito antes de pagar.
+          </p>
+        )}
+
         <a
           href={linkWhatsApp}
           target="_blank"
           rel="noopener noreferrer"
-          aria-disabled={!comprobanteUrl}
+          aria-disabled={!puedeEnviar}
           onClick={(e) => {
-            if (!comprobanteUrl) {
+            if (!puedeEnviar) {
               e.preventDefault();
               return;
             }
@@ -308,12 +342,12 @@ function ModalPago({
             onEnviado();
           }}
           className={`mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-whatsapp py-4 text-sm font-bold text-white transition ${
-            comprobanteUrl ? "hover:brightness-95" : "pointer-events-none opacity-40"
+            puedeEnviar ? "hover:brightness-95" : "pointer-events-none opacity-40"
           }`}
         >
           Enviar pedido por WhatsApp
         </a>
-        {!comprobanteUrl && (
+        {!comprobanteUrl && !bloqueado && (
           <p className="mt-2 text-center text-[11px] text-carbon-suave">
             Adjunta la captura del pago para habilitar el envío.
           </p>

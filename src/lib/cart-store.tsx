@@ -34,6 +34,8 @@ type CartContextValue = {
   listo: boolean;
   agregar: (item: CartItem) => void;
   cambiarCantidad: (productoId: string, talla: string, delta: number) => void;
+  /** Deja la línea en una cantidad exacta — se usa para ajustarla al stock real. */
+  fijarCantidad: (productoId: string, talla: string, cantidad: number) => void;
   quitar: (productoId: string, talla: string) => void;
   vaciar: () => void;
 };
@@ -100,6 +102,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const fijarCantidad = useCallback(
+    (productoId: string, talla: string, cantidad: number) => {
+      setItems((actuales) =>
+        actuales.flatMap((i) => {
+          if (!mismaLinea(i, { productoId, talla })) return [i];
+          // Fijar en cero equivale a quitar la línea, igual que bajar de 1.
+          return cantidad < 1 ? [] : [{ ...i, cantidad }];
+        })
+      );
+    },
+    []
+  );
+
   const quitar = useCallback((productoId: string, talla: string) => {
     setItems((actuales) =>
       actuales.filter((i) => !mismaLinea(i, { productoId, talla }))
@@ -118,10 +133,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       listo,
       agregar,
       cambiarCantidad,
+      fijarCantidad,
       quitar,
       vaciar,
     };
-  }, [items, listo, agregar, cambiarCantidad, quitar, vaciar]);
+  }, [items, listo, agregar, cambiarCantidad, fijarCantidad, quitar, vaciar]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

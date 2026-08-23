@@ -2,19 +2,41 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { CheckCircle2, Minus, Plus, Trash2 } from "lucide-react";
-import { useCart } from "@/lib/cart-store";
+import { useMemo, useState } from "react";
+import { CheckCircle2, Loader2, Minus, Plus, Trash2 } from "lucide-react";
+import { useCart, type CartItem } from "@/lib/cart-store";
 import { formatSoles } from "@/lib/format";
 import { hayNumeroWhatsApp } from "@/lib/whatsapp";
 import { MetodoPagoSelector } from "@/components/MetodoPagoSelector";
+import { useStockEnVivo } from "@/lib/useStockEnVivo";
 
 export function CarritoVista() {
-  const { items, total, listo, cambiarCantidad, quitar, vaciar } = useCart();
+  const { items, total, listo, cambiarCantidad, fijarCantidad, quitar, vaciar } =
+    useCart();
   // Se activa al enviar el pedido por WhatsApp: vacía el carrito para que no
   // quede el mismo pedido esperando en el celular después de coordinarlo, y
   // muestra el mensaje de confirmación aunque la lista ya esté vacía.
   const [pedidoEnviado, setPedidoEnviado] = useState(false);
+
+  // Acá sí se le pregunta al ERP: son los códigos que la clienta ya eligió,
+  // en una sola petición, y es el momento en que saber el stock real importa
+  // — antes de que pierda tiempo pagando algo que ya no está.
+  const codigos = useMemo(
+    () => [...new Set(items.map((i) => i.codigoLote))],
+    [items]
+  );
+  const { ok: stockOk, cargando: verificando, porCodigo, revalidar } =
+    useStockEnVivo(codigos);
+
+  function disponiblesDe(item: CartItem): number {
+    return porCodigo.get(item.codigoLote)?.get(item.talla) ?? 0;
+  }
+
+  // Con stockOk=false (ERP caído o sin configurar) no hay nada que validar:
+  // el carrito se comporta exactamente como antes de esta integración.
+  const faltantes = stockOk
+    ? items.filter((i) => disponiblesDe(i) < i.cantidad)
+    : [];
 
   // Hasta leer localStorage no sabemos si el carrito tiene algo; mostrar
   // "vacío" antes de tiempo haría parpadear la pantalla.
@@ -55,10 +77,15 @@ export function CarritoVista() {
       </p>
 
       <ul className="mt-6 space-y-3">
-        {items.map((item) => (
+        {items.map((item) => {
+          const disponibles = stockOk ? disponiblesDe(item) : null;
+          const falta = disponibles !== null && disponibles < item.cantidad;
+          return (
           <li
             key={`${item.productoId}-${item.talla}`}
-            className="flex gap-4 rounded-tarjeta bg-white p-3 sombra-tarjeta"
+            className={`flex gap-4 rounded-tarjeta bg-white p-3 sombra-tarjeta ${
+              falta ? "ring-1 ring-rosa" : ""
+            }`}
           >
             <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-lg bg-rosa-suave/30">
               {item.imagenUrl && (
@@ -83,6 +110,39 @@ export function CarritoVista() {
                 <p className="mt-1 text-sm font-extrabold text-terracota-oscuro">
                   {formatSoles(item.precio * item.cantidad)}
                 </p>
+
+                {/* El ERP puede haber vendido estas unidades en el mostrador
+                    mientras la clienta armaba su pedido acá. */}
+                {falta && (
+                  <p className="mt-1.5 text-xs font-semibold text-rosa">
+                    {disponibles === 0 ? (
+                      <>
+                        Se agotó en talla {item.talla}.{" "}
+                        <button
+                          type="button"
+                          onClick={() => quitar(item.productoId, item.talla)}
+                          className="underline underline-offset-2"
+                        >
+                          Quitar del carrito
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        Solo {disponibles === 1 ? "queda 1" : `quedan ${disponibles}`} en
+                        talla {item.talla}.{" "}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            fijarCantidad(item.productoId, item.talla, disponibles)
+                          }
+                          className="underline underline-offset-2"
+                        >
+                          Ajustar cantidad
+                        </button>
+                      </>
+                    )}
+                  </p>
+                )}
               </div>
 
               <div className="mt-2 flex items-center gap-3">
@@ -100,7 +160,9 @@ export function CarritoVista() {
                 <button
                   type="button"
                   onClick={() => cambiarCantidad(item.productoId, item.talla, 1)}
-                  className="flex h-7 w-7 items-center justify-center rounded-full border border-linea text-carbon-suave transition hover:border-terracota hover:text-terracota"
+                  // Con stock real conocido no se deja pedir más de lo que hay.
+                  disabled={disponibles !== null && item.cantidad >= disponibles}
+                  className="flex h-7 w-7 items-center justify-center rounded-full border border-linea text-carbon-suave transition hover:border-terracota hover:text-terracota disabled:opacity-30 disabled:hover:border-linea disabled:hover:text-carbon-suave"
                   aria-label={`Agregar una unidad de ${item.nombre} talla ${item.talla}`}
                 >
                   <Plus size={14} />
@@ -117,7 +179,8 @@ export function CarritoVista() {
               </div>
             </div>
           </li>
-        ))}
+          );
+        })}
       </ul>
 
       <div className="mt-6 rounded-tarjeta bg-white p-5 sombra-tarjeta">
@@ -149,11 +212,30 @@ export function CarritoVista() {
         </p>
       )}
 
+      {verificando && codigos.length > 0 && (
+        <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-carbon-suave">
+          <Loader2 size={13} className="animate-spin" />
+          Verificando disponibilidad...
+        </p>
+      )}
+
+      {faltantes.length > 0 && (
+        <p
+          role="alert"
+          className="mt-5 rounded-tarjeta bg-rosa-suave/50 p-4 text-center text-sm text-terracota-oscuro"
+        >
+          Algunas prendas ya no tienen todas las unidades que pediste. Ajusta
+          las cantidades marcadas arriba para continuar.
+        </p>
+      )}
+
       {/* El pedido no se guarda en base de datos: WhatsApp es el registro. */}
       {hayNumeroWhatsApp() && (
         <>
           <MetodoPagoSelector
             items={items}
+            bloqueado={faltantes.length > 0}
+            revalidarStock={revalidar}
             onPedidoEnviado={() => {
               vaciar();
               setPedidoEnviado(true);

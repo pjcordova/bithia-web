@@ -7,11 +7,15 @@ import type { ProductoPublico } from "@/lib/productos";
 import { useCart } from "@/lib/cart-store";
 import { esNueva, formatSoles } from "@/lib/format";
 import { TALLAS } from "@/lib/categorias";
-import { useStockEnVivo } from "@/lib/useStockEnVivo";
+import { SIN_STOCK, useStockEnVivo } from "@/lib/useStockEnVivo";
 
 export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
   const { agregar } = useCart();
-  const { ok, porTalla } = useStockEnVivo(producto.codigo_lote);
+  // Una sola prenda, una sola consulta: acá la clienta ya está eligiendo
+  // talla, así que vale preguntarle al ERP (al abrir y al volver a la
+  // pestaña, no en bucle).
+  const { ok, porCodigo } = useStockEnVivo([producto.codigo_lote]);
+  const porTalla = porCodigo.get(producto.codigo_lote) ?? SIN_STOCK;
   // Con ok=false (ERP caído, sin configurar, o no respondió a tiempo) se cae
   // al toggle manual de siempre. Con ok=true, manda el stock real — incluso
   // si el ERP no tiene este producto, eso significa agotado, no "no sabemos".
