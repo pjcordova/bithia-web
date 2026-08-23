@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
-import { Camera, Loader2, Trash2, X } from "lucide-react";
+import { Camera, Loader2, Plus, Trash2, X } from "lucide-react";
 import {
   actualizarProducto,
   crearProducto,
@@ -76,6 +76,8 @@ export function ProductForm({
   );
 
   const [imagenUrl, setImagenUrl] = useState(producto?.imagen_url ?? "");
+  const [extras, setExtras] = useState<string[]>(producto?.imagenes ?? []);
+  const [subiendoExtra, setSubiendoExtra] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
   const [errorFoto, setErrorFoto] = useState<string | null>(null);
 
@@ -101,9 +103,10 @@ export function ProductForm({
 
   /**
    * Subida sin firmar: el archivo va del navegador directo a Cloudinary, así
-   * las fotos nunca pasan por el servidor de Next ni por Vercel.
+   * las fotos nunca pasan por el servidor de Next ni por Vercel. Devuelve la
+   * URL para que cada llamador decida dónde guardarla.
    */
-  async function subirFoto(archivo: File) {
+  async function subirACloudinary(archivo: File): Promise<string | null> {
     const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
     const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
@@ -111,15 +114,14 @@ export function ProductForm({
       setErrorFoto(
         "Falta configurar Cloudinary. Revisa las variables de entorno."
       );
-      return;
+      return null;
     }
     if (archivo.size > 10 * 1024 * 1024) {
       setErrorFoto("La foto pesa más de 10 MB. Usa una más liviana.");
-      return;
+      return null;
     }
 
     setErrorFoto(null);
-    setSubiendo(true);
     try {
       const cuerpo = new FormData();
       cuerpo.append("file", archivo);
@@ -134,12 +136,28 @@ export function ProductForm({
 
       const data: { secure_url?: string } = await res.json();
       if (!data.secure_url) throw new Error("respuesta sin secure_url");
-      setImagenUrl(data.secure_url);
+      return data.secure_url;
     } catch {
       setErrorFoto("No se pudo subir la foto. Revisa tu conexión y reintenta.");
-    } finally {
-      setSubiendo(false);
+      return null;
     }
+  }
+
+  async function subirFoto(archivo: File) {
+    setSubiendo(true);
+    const url = await subirACloudinary(archivo);
+    if (url) setImagenUrl(url);
+    setSubiendo(false);
+  }
+
+  /** Varias a la vez: eligiendo 3 fotos se suben las 3, en orden. */
+  async function agregarExtras(archivos: FileList) {
+    setSubiendoExtra(true);
+    for (const archivo of Array.from(archivos)) {
+      const url = await subirACloudinary(archivo);
+      if (url) setExtras((previas) => [...previas, url]);
+    }
+    setSubiendoExtra(false);
   }
 
   return (
@@ -418,16 +436,66 @@ export function ProductForm({
 
           <Campo
             etiqueta="Fotos adicionales"
-            htmlFor="imagenes"
-            ayuda="Una URL de Cloudinary por línea. Se usan en la galería de “Top de la semana”; la foto de arriba siempre va primera."
+            htmlFor="imagenes-extra"
+            ayuda="Alimentan la galería de “Top de la semana” y la foto que aparece al pasar el mouse en “Shop the look”. La foto principal de arriba siempre va primera."
           >
-            <textarea
-              id="imagenes"
-              name="imagenes"
-              rows={3}
-              defaultValue={(producto?.imagenes ?? []).join("\n")}
-              placeholder="https://res.cloudinary.com/..."
-              className={`${ENTRADA} resize-y font-mono text-xs`}
+            {/* El valor real viaja acá; los botones de abajo solo lo editan.
+                Se manda en una línea por foto, que es como lo lee la acción. */}
+            <input type="hidden" name="imagenes" value={extras.join("\n")} />
+
+            <div className="grid grid-cols-3 gap-2">
+              {extras.map((url, i) => (
+                <div
+                  key={`${url}-${i}`}
+                  className="relative aspect-[3/4] overflow-hidden rounded-lg bg-crema"
+                >
+                  <Image
+                    src={url}
+                    alt={`Foto adicional ${i + 1}`}
+                    fill
+                    sizes="120px"
+                    className="object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setExtras((previas) => previas.filter((_, j) => j !== i))
+                    }
+                    aria-label={`Quitar la foto adicional ${i + 1}`}
+                    className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-carbon/70 text-white transition hover:bg-carbon"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              ))}
+
+              <label
+                htmlFor="imagenes-extra"
+                className="flex aspect-[3/4] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-linea bg-crema text-center transition hover:border-terracota"
+              >
+                {subiendoExtra ? (
+                  <Loader2 className="animate-spin text-terracota" size={20} />
+                ) : (
+                  <>
+                    <Plus className="text-carbon-suave" size={20} aria-hidden />
+                    <span className="mt-1 px-1 text-[10px] leading-tight text-terracota-oscuro">
+                      Agregar foto
+                    </span>
+                  </>
+                )}
+              </label>
+            </div>
+            <input
+              id="imagenes-extra"
+              type="file"
+              accept="image/*"
+              multiple
+              className="sr-only"
+              onChange={(e) => {
+                const archivos = e.target.files;
+                if (archivos && archivos.length > 0) agregarExtras(archivos);
+                e.target.value = "";
+              }}
             />
           </Campo>
 
