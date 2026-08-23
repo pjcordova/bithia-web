@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s · Bithia Brand",
   },
   description:
-    "Prendas exclusivas de moda femenina con la calidez de Ica. Mercadería nueva cada 15 días. Galería Polvos Rosados, Ica.",
+    "Prendas exclusivas de moda femenina con la calidez de Ica. Mercadería nueva cada 15 días. Polvos Azules, Stand 170, Ica.",
   openGraph: {
     title: "Bithia Brand — Moda femenina en Ica",
     description:

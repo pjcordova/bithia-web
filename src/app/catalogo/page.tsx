@@ -11,7 +11,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Catálogo",
   description:
-    "Vestidos, blusas, faldas, pantalones, blazers y tops. Tallas S, M y L. Bithia Brand, Galería Polvos Rosados, Ica.",
+    "Vestidos, blusas, faldas, pantalones, blazers y tops. Tallas S, M y L. Bithia Brand, Polvos Azules, Stand 170, Ica.",
 };
 
 export default async function CatalogoPage() {

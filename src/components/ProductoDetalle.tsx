@@ -201,7 +201,7 @@ export function ProductoDetalle({ producto }: { producto: ProductoPublico }) {
         <div className="mt-6 space-y-3">
           <p className="flex gap-3 rounded-tarjeta bg-rosa-suave/30 p-4 text-xs leading-relaxed text-carbon-suave">
             <Truck size={18} className="shrink-0 text-terracota" aria-hidden />
-            Recojo en tienda (Galería Polvos Rosados, Ica) o delivery coordinado
+            Recojo en tienda (Polvos Azules, Stand 170, Ica) o delivery coordinado
             de forma personalizada por WhatsApp.
           </p>
           <p className="flex gap-3 rounded-tarjeta bg-rosa-suave/30 p-4 text-xs leading-relaxed text-carbon-suave">

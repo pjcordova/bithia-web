@@ -17,42 +17,50 @@ export type MetodoPago = {
   deepLink: string;
 };
 
-// TODO: datos de PRUEBA para armar el flujo. Antes de publicar, reemplazar
-// por el número real de Yape/Plin de Bithia Brand y el CCI real de cada
-// banco (pedírselo a la dueña).
+/**
+ * Yape y Plin ya tienen los datos reales de Geraldine Cerna, la dueña.
+ *
+ * ⚠️ PENDIENTE ANTES DE PUBLICAR: los CCI de BCP y BBVA de acá abajo siguen
+ * siendo INVENTADOS, de cuando se armó el flujo. Si el sitio sale a producción
+ * así, una clienta puede transferir a una cuenta que no existe o que no es de
+ * Bithia. Pedirle los dos CCI reales a Geraldine y reemplazarlos, o quitar
+ * esos dos métodos de ORDEN_METODOS hasta tenerlos.
+ */
 export const METODOS_PAGO: Record<MetodoPagoId, MetodoPago> = {
   yape: {
     id: "yape",
     etiqueta: "Yape",
     tipo: "billetera",
-    dato: "934023810",
-    titular: "Alexander Loo",
+    dato: "942275208",
+    titular: "Geraldine Cerna",
     deepLink: "yape://",
   },
   plin: {
     id: "plin",
     etiqueta: "Plin",
     tipo: "billetera",
-    // Plin de la cuenta Interbank de la dueña: se paga igual con el número
-    // de celular, pero el intento de deep link abre la app de Interbank.
-    dato: "934023810",
-    titular: "Alexander Loo",
+    // Plin se paga con el mismo número de celular que Yape; el deep link
+    // apunta a Interbank, que es donde vive el Plin de la dueña.
+    dato: "942275208",
+    titular: "Geraldine Cerna",
     deepLink: "interbank://",
   },
   bcp: {
     id: "bcp",
     etiqueta: "Transferencia BCP",
     tipo: "banco",
+    // ⚠️ CCI INVENTADO — ver el aviso de arriba.
     dato: "00212311456789012345",
-    titular: "Alexander Loo",
+    titular: "Geraldine Cerna",
     deepLink: "bcpmovil://",
   },
   bbva: {
     id: "bbva",
     etiqueta: "Transferencia BBVA",
     tipo: "banco",
+    // ⚠️ CCI INVENTADO — ver el aviso de arriba.
     dato: "01133451234567890123",
-    titular: "Alexander Loo",
+    titular: "Geraldine Cerna",
     deepLink: "bbvanetcashperu://",
   },
 };

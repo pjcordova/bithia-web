@@ -40,7 +40,7 @@ const SLIDES = [
     etiqueta: "Visítanos",
     titulo: "Pruébate en el stand",
     subtitulo:
-      "Estamos en la Galería Polvos Rosados, Ica. Coordina tu visita por WhatsApp.",
+      "Estamos en Polvos Azules, Stand 170, Ica. Coordina tu visita por WhatsApp.",
     cta_texto: "Cómo llegar",
     cta_href: "/catalogo",
   },

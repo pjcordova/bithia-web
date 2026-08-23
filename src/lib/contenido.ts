@@ -13,7 +13,7 @@
  */
 export const ANUNCIOS = [
   "Mercadería nueva cada 15 días",
-  "Recojo en tienda · Galería Polvos Rosados, Ica",
+  "Recojo en tienda · Polvos Azules, Stand 170, Ica",
   "Coordinamos tu delivery por WhatsApp",
 ] as const;
 
@@ -46,12 +46,12 @@ export const HERO_INTERVALO_MS = 6000;
 // ---------------------------------------------------------------------------
 
 export const TIENDA = {
-  nombre: "Galería Polvos Rosados",
+  nombre: "Polvos Azules (Stand 170)",
   ciudad: "Ica, Perú",
   /** TODO: reemplazar por una foto real del stand de Bithia. */
   foto: "https://res.cloudinary.com/rrh7xuqq/image/upload/samples/people/kitchen-bar.jpg",
-  /** Búsqueda en Maps, no un punto inventado: la dirección exacta la fija la dueña. */
-  mapa: "https://www.google.com/maps/search/?api=1&query=Galer%C3%ADa+Polvos+Rosados+Ica+Per%C3%BA",
+  /** Búsqueda en Maps: el stand no tiene punto propio, la galería sí. */
+  mapa: "https://www.google.com/maps/search/?api=1&query=Polvos+Azules+Ica+Per%C3%BA",
 };
 
 // ---------------------------------------------------------------------------
@@ -70,7 +70,7 @@ export const GARANTIAS = [
   {
     icono: "tienda" as const,
     titulo: "Recojo en tienda",
-    detalle: "En nuestro stand de Galería Polvos Rosados, Ica.",
+    detalle: "En nuestro stand 170 de Polvos Azules, Ica.",
   },
   {
     icono: "envio" as const,
