@@ -294,6 +294,70 @@ export async function eliminarSlide(formData: FormData): Promise<void> {
   refrescarVistas();
 }
 
+/** Bandas de la portada que muestran una sola prenda. */
+export type CampoBanda = "edicion_limitada" | "top_semana" | "banner_inferior";
+
+/**
+ * Pone una prenda al frente de una banda y desmarca las demás.
+ *
+ * Antes esto se hacía con una casilla dentro de cada prenda, y como la banda
+ * muestra solo la más reciente marcada, se acumulaban marcas que no hacían
+ * nada: había cuatro prendas en "Edición limitada" y solo una se veía, sin
+ * que el panel lo dijera. Al elegir desde la sección, lo que se ve y lo que
+ * está marcado no pueden volver a separarse.
+ *
+ * Con productoId en null la banda queda vacía y deja de mostrarse.
+ */
+export async function fijarProtagonista(
+  campo: CampoBanda,
+  productoId: string | null
+): Promise<void> {
+  await exigirSesion();
+
+  // En una transacción: si falla el marcado, no queda la banda vacía.
+  await prisma.$transaction(async (tx) => {
+    const apagado = { [campo]: false } as Record<CampoBanda, boolean>;
+    await tx.productos.updateMany({
+      where: { [campo]: true },
+      data: apagado,
+    });
+    if (productoId) {
+      const encendido = { [campo]: true } as Record<CampoBanda, boolean>;
+      await tx.productos.update({ where: { id: productoId }, data: encendido });
+    }
+  });
+
+  refrescarVistas();
+}
+
+/**
+ * Reemplaza por completo la selección de "Los más pedidos".
+ *
+ * La sección muestra 8; marcar más no hacía nada visible y tampoco se
+ * avisaba. Acá se guarda exactamente lo elegido, así que el conteo del panel
+ * y lo que se ve en la portada coinciden.
+ */
+export async function fijarDestacados(ids: string[]): Promise<void> {
+  await exigirSesion();
+
+  const limpios = [...new Set(ids.filter((id) => typeof id === "string" && id))];
+
+  await prisma.$transaction(async (tx) => {
+    await tx.productos.updateMany({
+      where: { destacado: true },
+      data: { destacado: false },
+    });
+    if (limpios.length) {
+      await tx.productos.updateMany({
+        where: { id: { in: limpios } },
+        data: { destacado: true },
+      });
+    }
+  });
+
+  refrescarVistas();
+}
+
 export type TiendaState = { error?: string; ok?: boolean };
 
 /**

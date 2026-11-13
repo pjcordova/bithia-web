@@ -148,6 +148,7 @@ export function AdminDashboard({
 
       {zona === "portada" && (
         <AdminPortada
+          productos={productos}
           categorias={categorias}
           slides={slides}
           look={look}
