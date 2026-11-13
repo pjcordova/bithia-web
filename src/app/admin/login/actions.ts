@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import {
   SESSION_COOKIE,
   createSessionToken,
+  hashAdmin,
   sessionCookieOptions,
 } from "@/lib/auth";
 
@@ -29,7 +30,7 @@ export async function iniciarSesion(
   }
 
   const emailEsperado = (process.env.ADMIN_EMAIL ?? "").trim().toLowerCase();
-  const hashEsperado = process.env.ADMIN_PASSWORD_HASH ?? "";
+  const hashEsperado = hashAdmin();
 
   const secreto = process.env.AUTH_SECRET ?? "";
 

@@ -22,11 +22,16 @@ if (password.length < 8) {
 
 const hash = bcrypt.hashSync(password, 12);
 
-// Next carga el .env con dotenv-expand, que trata `$` como inicio de variable.
-// Sin escapar, `$2a$12$...` llega mutilado (46 caracteres en vez de 60) y el
-// login rechaza la contraseña correcta sin dar ninguna pista del motivo.
-const escapado = hash.replace(/\$/g, "\\$");
+// Se entrega en base64 a propósito. Next carga el .env con dotenv-expand, que
+// trata los `$` del hash como nombres de variable y lo deja mutilado —18
+// caracteres en vez de 60— sin que comillas ni barras de escape lo eviten; el
+// login rechaza entonces la contraseña correcta sin dar ninguna pista. En
+// base64 no hay `$`, así que llega intacto, y el mismo valor sirve en Vercel.
+const codificado = Buffer.from(hash, "utf8").toString("base64");
 
 console.log("\nPega esta línea tal cual en tu .env:\n");
-console.log(`ADMIN_PASSWORD_HASH="${escapado}"\n`);
-console.log("Las barras invertidas son necesarias — no las quites.\n");
+console.log(`ADMIN_PASSWORD_HASH="${codificado}"\n`);
+console.log("Y en Vercel, en ADMIN_PASSWORD_HASH, solo el valor:\n");
+console.log(`${codificado}\n`);
+console.log("Es el mismo valor en los dos sitios. La contraseña en texto");
+console.log("plano no se guarda en ningún lado.\n");
