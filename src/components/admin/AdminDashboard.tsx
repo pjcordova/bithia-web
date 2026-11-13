@@ -16,6 +16,9 @@ import { AdminHero } from "@/components/admin/AdminHero";
 import { SlideForm } from "@/components/admin/SlideForm";
 import { LookForm } from "@/components/admin/LookForm";
 import { TiendaForm } from "@/components/admin/TiendaForm";
+import { AdminPrendas } from "@/components/admin/AdminPrendas";
+import { AdminPortada } from "@/components/admin/AdminPortada";
+import { calcularUbicaciones } from "@/lib/ubicaciones";
 import { BandaMarquesina } from "@/components/BandaMarquesina";
 import { BannerTiendaVista } from "@/components/BannerTienda";
 import { FranjaGarantias } from "@/components/FranjaGarantias";
@@ -24,6 +27,14 @@ import { cerrarSesion } from "@/app/admin/login/actions";
 import type { CategoriaDestacada } from "@/lib/productos";
 import type { HeroSlide } from "@/lib/hero";
 import type { Tienda } from "@/lib/tienda";
+
+type Zona = "prendas" | "portada" | "vista";
+
+const ZONAS: { id: Zona; etiqueta: string }[] = [
+  { id: "prendas", etiqueta: "Prendas" },
+  { id: "portada", etiqueta: "Portada" },
+  { id: "vista", etiqueta: "Vista previa" },
+];
 
 export function AdminDashboard({
   productos,
@@ -47,6 +58,14 @@ export function AdminDashboard({
   >(null);
   const [editandoLook, setEditandoLook] = useState<AdminLook | null>(null);
   const [editandoTienda, setEditandoTienda] = useState<Tienda | null>(null);
+  const [zona, setZona] = useState<Zona>("prendas");
+
+  // En qué espacios de la portada cae cada prenda. Se calcula una vez acá y
+  // baja a la lista de Prendas, que es donde hacía falta decirlo.
+  const ubicaciones = useMemo(() => {
+    const idsEnLook = new Set((look?.items ?? []).map((i) => i.producto.id));
+    return calcularUbicaciones(productos, idsEnLook);
+  }, [productos, look]);
 
   // Mismos recortes que arma la home pública (lib/productos.ts), pero sin el
   // filtro de visible_en_tienda: acá la dueña necesita ver y poder reactivar
@@ -91,12 +110,69 @@ export function AdminDashboard({
         </div>
       </header>
 
-      <p className="mx-auto max-w-6xl px-4 pt-4 text-center text-xs text-carbon-suave">
-        Esta es la misma página que ve la clienta, en el mismo orden. Toca
-        cualquier foto para editar esa prenda.
+      {/* Tres zonas separadas a propósito: el inventario (una prenda, una
+          vez), la portada (cada espacio rotulado) y la web tal cual, que
+          queda solo para mirar. Antes todo era lo último, y editar desde ahí
+          hacía creer que se tocaba un único sitio. */}
+      <nav
+        className="sticky top-[57px] z-20 border-b border-linea bg-crema/95 backdrop-blur"
+        aria-label="Zonas del panel"
+      >
+        <div className="mx-auto flex max-w-6xl gap-1 px-4">
+          {ZONAS.map((z) => (
+            <button
+              key={z.id}
+              type="button"
+              onClick={() => setZona(z.id)}
+              aria-current={zona === z.id}
+              className={`-mb-px border-b-2 px-3 py-3 text-sm font-semibold transition ${
+                zona === z.id
+                  ? "border-terracota text-terracota-oscuro"
+                  : "border-transparent text-carbon-suave hover:text-carbon"
+              }`}
+            >
+              {z.etiqueta}
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      {zona === "prendas" && (
+        <AdminPrendas
+          productos={productos}
+          ubicaciones={ubicaciones}
+          onEditar={setEditando}
+          onAgregar={() => setEditando(undefined)}
+        />
+      )}
+
+      {zona === "portada" && (
+        <AdminPortada
+          categorias={categorias}
+          slides={slides}
+          look={look}
+          tienda={tienda}
+          destacados={destacados}
+          novedades={novedades}
+          edicionLimitada={edicionLimitada}
+          topSemana={topSemana}
+          bannerInferior={bannerInferior}
+          onEditar={setEditando}
+          onEditarSlide={setEditandoSlide}
+          onAgregarSlide={() => setEditandoSlide(undefined)}
+          onEditarLook={setEditandoLook}
+          onEditarTienda={setEditandoTienda}
+        />
+      )}
+
+      {zona === "vista" && (
+      <>
+      <p className="mx-auto max-w-6xl px-4 pt-5 text-center text-xs text-carbon-suave">
+        La web tal como la ve la clienta. Es solo para mirar: para cambiar algo,
+        usa <strong>Prendas</strong> o <strong>Portada</strong>.
       </p>
 
-      <main>
+      <main className="pointer-events-none mt-2 select-none">
         <AdminHero
           slides={slides}
           onEditar={setEditandoSlide}
@@ -173,16 +249,9 @@ export function AdminDashboard({
           <FranjaGarantias />
         </div>
 
-        <div className="mx-auto max-w-6xl px-4 pb-10">
-          <AdminGridProductos
-            titulo="Todo el inventario"
-            productos={productos}
-            columnas="grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
-            onEditar={setEditando}
-            vacioTexto='Todavía no has agregado prendas. Toca "Agregar prenda" para publicar la primera.'
-          />
-        </div>
       </main>
+      </>
+      )}
 
       {editando !== null && (
         <ProductForm producto={editando} onCerrar={() => setEditando(null)} />
