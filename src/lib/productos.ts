@@ -117,10 +117,18 @@ const seleccion = {
 } as const;
 
 /**
- * Las páginas públicas se prerenderizan en el build. Si la base no responde en
- * ese momento, dejamos caer la página entera y el despliegue completo falla —
- * incluido el panel admin, que sí funcionaría. Preferimos registrar el error y
- * devolver vacío: la revalidación de la hora siguiente repuebla el catálogo.
+ * Lee de la base tolerando un fallo, pero de distinta forma según el momento.
+ *
+ * En el build: se devuelve el respaldo. Las páginas públicas se prerenderizan
+ * ahí, y si Neon no responde preferimos un catálogo vacío a que se caiga el
+ * despliegue entero — incluido el panel admin, que sí funcionaría.
+ *
+ * En ejecución: se relanza el error. Es el caso que importa, porque las
+ * páginas se regeneran cada hora y Neon se suspende sola cuando no hay
+ * visitas. Devolviendo el respaldo, una revalidación con la base dormida
+ * guardaba un catálogo vacío —o un 404 en una ficha que sí existe— y lo
+ * servía durante la hora siguiente: el sitio respondía 200 pero sin prendas.
+ * Al relanzar, Next conserva la última versión buena y reintenta después.
  */
 export async function leerSeguro<T>(
   etiqueta: string,
@@ -131,7 +139,9 @@ export async function leerSeguro<T>(
     return await consulta();
   } catch (e) {
     console.error(`[productos] falló ${etiqueta}:`, e);
-    return respaldo;
+    // Next define NEXT_PHASE durante `next build`; en ejecución no está.
+    if (process.env.NEXT_PHASE === "phase-production-build") return respaldo;
+    throw e;
   }
 }
 
