@@ -19,6 +19,8 @@ import { TiendaForm } from "@/components/admin/TiendaForm";
 import { AdminPrendas } from "@/components/admin/AdminPrendas";
 import { AdminPortada } from "@/components/admin/AdminPortada";
 import { calcularUbicaciones } from "@/lib/ubicaciones";
+import { AdminColecciones } from "@/components/admin/AdminColecciones";
+import type { Coleccion } from "@/lib/colecciones";
 import { BandaMarquesina } from "@/components/BandaMarquesina";
 import { BannerTiendaVista } from "@/components/BannerTienda";
 import { FranjaGarantias } from "@/components/FranjaGarantias";
@@ -28,10 +30,11 @@ import type { CategoriaDestacada } from "@/lib/productos";
 import type { HeroSlide } from "@/lib/hero";
 import type { Tienda } from "@/lib/tienda";
 
-type Zona = "prendas" | "portada" | "vista";
+type Zona = "prendas" | "colecciones" | "portada" | "vista";
 
 const ZONAS: { id: Zona; etiqueta: string }[] = [
   { id: "prendas", etiqueta: "Prendas" },
+  { id: "colecciones", etiqueta: "Colecciones" },
   { id: "portada", etiqueta: "Portada" },
   { id: "vista", etiqueta: "Vista previa" },
 ];
@@ -43,6 +46,8 @@ export function AdminDashboard({
   slides,
   tienda,
   categoriasFijadas,
+  colecciones,
+  prendasPorColeccion,
 }: {
   productos: ProductoAdmin[];
   categorias: CategoriaDestacada[];
@@ -50,6 +55,8 @@ export function AdminDashboard({
   slides: HeroSlide[];
   tienda: Tienda;
   categoriasFijadas: string[];
+  colecciones: Coleccion[];
+  prendasPorColeccion: Record<string, string[]>;
 }) {
   // null = formulario cerrado; undefined = abierto en modo "agregar".
   const [editando, setEditando] = useState<ProductoAdmin | undefined | null>(
@@ -145,6 +152,14 @@ export function AdminDashboard({
           ubicaciones={ubicaciones}
           onEditar={setEditando}
           onAgregar={() => setEditando(undefined)}
+        />
+      )}
+
+      {zona === "colecciones" && (
+        <AdminColecciones
+          colecciones={colecciones}
+          productos={productos}
+          prendasPorColeccion={prendasPorColeccion}
         />
       )}
 

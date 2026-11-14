@@ -57,6 +57,10 @@ model productos {
   top_semana        Boolean  @default(false)
   // Protagoniza la segunda banda ancha, debajo de "Top de la semana".
   banner_inferior   Boolean  @default(false)
+  // Tanda de mercadería a la que pertenece. Nulo en todo lo que ya existía:
+  // las colecciones son opcionales y nada depende de tenerlas.
+  coleccion_id      String?      @db.Uuid
+  coleccion         colecciones? @relation(fields: [coleccion_id], references: [id], onDelete: SetNull)
   created_at        DateTime @default(now()) @db.Timestamptz(6)
   tallas            tallas[]
   look_items        look_items[]
@@ -64,6 +68,7 @@ model productos {
   @@index([categoria])
   @@index([created_at])
   @@index([grupo_variante])
+  @@index([coleccion_id])
 }
 
 // Un conjunto armado: la foto de la clienta con varias prendas puestas y los
@@ -117,6 +122,26 @@ model tallas {
 
   @@unique([producto_id, talla])
   @@index([producto_id])
+}
+
+// Una carga de mercadería: el stand se renueva cada 15 días y hasta ahora cada
+// prenda nueva había que publicarla y marcarla de a una. Una colección agrupa
+// esa tanda para poder armarla con calma —las prendas quedan sin publicar
+// mientras tanto— y soltarla entera de una vez.
+//
+// La colección publicada más reciente es la que manda en "Nuevos ingresos".
+// Sin ninguna publicada, esa sección se comporta como siempre: las 4 prendas
+// más recientes.
+model colecciones {
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre       String
+  // Nula mientras es borrador. Al publicar se sella con la fecha, y esa fecha
+  // es la que decide cuál está vigente.
+  publicada_at DateTime?   @db.Timestamptz(6)
+  created_at   DateTime    @default(now()) @db.Timestamptz(6)
+  productos    productos[]
+
+  @@index([publicada_at])
 }
 
 // Foto de portada de cada mosaico de categoría.

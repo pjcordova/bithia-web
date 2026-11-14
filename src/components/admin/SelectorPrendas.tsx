@@ -32,6 +32,7 @@ export function SelectorPrendas({
   seleccionInicial,
   maximo,
   permiteVacio,
+  incluirSinPublicar = false,
   onGuardar,
   onCerrar,
 }: {
@@ -42,6 +43,13 @@ export function SelectorPrendas({
   /** 1 para las bandas; 8 para "Los más pedidos". */
   maximo: number;
   permiteVacio: boolean;
+  /**
+   * Para armar una colección hay que poder meter prendas todavía sin
+   * publicar: esa es la gracia de prepararla con calma y soltarla entera.
+   * Para los espacios de la portada no, porque una prenda sin publicar
+   * nunca aparecería ahí.
+   */
+  incluirSinPublicar?: boolean;
   onGuardar: (ids: string[]) => Promise<void>;
   onCerrar: () => void;
 }) {
@@ -51,8 +59,11 @@ export function SelectorPrendas({
   const [elegidas, setElegidas] = useState<string[]>(seleccionInicial);
 
   const publicadas = useMemo(
-    () => productos.filter((p) => p.visible_en_tienda && p.imagen_url),
-    [productos]
+    () =>
+      productos.filter(
+        (p) => p.imagen_url && (incluirSinPublicar || p.visible_en_tienda)
+      ),
+    [productos, incluirSinPublicar]
   );
 
   const visibles = useMemo(() => {
@@ -194,6 +205,11 @@ export function SelectorPrendas({
                     </p>
                     <p className="truncate px-1.5 pb-1.5 text-[10px] text-carbon-suave">
                       {formatSoles(p.precio_venta)}
+                      {incluirSinPublicar && !p.visible_en_tienda && (
+                        <span className="ml-1 text-terracota-oscuro">
+                          · sin publicar
+                        </span>
+                      )}
                     </p>
                   </button>
                 </li>

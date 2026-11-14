@@ -389,6 +389,98 @@ export async function guardarFotoCategoria(
   refrescarVistas();
 }
 
+export type ColeccionState = { error?: string; ok?: boolean };
+
+/** Crea una tanda vacía, en borrador. Se le asignan prendas después. */
+export async function crearColeccion(
+  _prev: ColeccionState,
+  formData: FormData
+): Promise<ColeccionState> {
+  await exigirSesion();
+  const nombre = String(formData.get("nombre") ?? "").trim();
+  if (!nombre) return { error: "Ponle un nombre a la colección." };
+
+  await prisma.colecciones.create({ data: { nombre } });
+  refrescarVistas();
+  return { ok: true };
+}
+
+/** Reemplaza por completo las prendas de una colección. */
+export async function fijarPrendasDeColeccion(
+  coleccionId: string,
+  ids: string[]
+): Promise<void> {
+  await exigirSesion();
+  if (!coleccionId) return;
+
+  const limpios = [...new Set(ids.filter(Boolean))];
+
+  await prisma.$transaction(async (tx) => {
+    // Las que salen de la tanda quedan sueltas, no se borran ni se ocultan:
+    // siguen en el catálogo como cualquier otra prenda.
+    await tx.productos.updateMany({
+      where: { coleccion_id: coleccionId },
+      data: { coleccion_id: null },
+    });
+    if (limpios.length) {
+      await tx.productos.updateMany({
+        where: { id: { in: limpios } },
+        data: { coleccion_id: coleccionId },
+      });
+    }
+  });
+
+  refrescarVistas();
+}
+
+/**
+ * Suelta la tanda: publica de golpe todas sus prendas y la deja como vigente.
+ *
+ * Es la acción que resume la quincena. Lo que no hace, a propósito, es ocultar
+ * la colección anterior: esas prendas siguen a la venta en el catálogo, solo
+ * dejan de anunciarse como novedad.
+ */
+export async function publicarColeccion(coleccionId: string): Promise<void> {
+  await exigirSesion();
+  if (!coleccionId) return;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.productos.updateMany({
+      where: { coleccion_id: coleccionId },
+      data: { visible_en_tienda: true },
+    });
+    await tx.colecciones.update({
+      where: { id: coleccionId },
+      data: { publicada_at: new Date() },
+    });
+  });
+
+  refrescarVistas();
+}
+
+/**
+ * Devuelve una colección a borrador. Las prendas no se ocultan —ya están a la
+ * venta y retirarlas sin avisar sería una sorpresa desagradable—, solo deja de
+ * ser la tanda vigente.
+ */
+export async function despublicarColeccion(coleccionId: string): Promise<void> {
+  await exigirSesion();
+  if (!coleccionId) return;
+  await prisma.colecciones.update({
+    where: { id: coleccionId },
+    data: { publicada_at: null },
+  });
+  refrescarVistas();
+}
+
+/** Borra la tanda. Sus prendas quedan sueltas, nunca se eliminan. */
+export async function eliminarColeccion(coleccionId: string): Promise<void> {
+  await exigirSesion();
+  if (!coleccionId) return;
+  await prisma.colecciones.delete({ where: { id: coleccionId } });
+  refrescarVistas();
+}
+
 export type TiendaState = { error?: string; ok?: boolean };
 
 /**

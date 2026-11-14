@@ -7,6 +7,7 @@ import type { CategoriaDestacada } from "@/lib/productos";
 import { NOMBRES_CATEGORIA } from "@/lib/categorias";
 import { listarSlidesAdmin } from "@/lib/hero";
 import { obtenerTienda } from "@/lib/tienda";
+import { listarColecciones } from "@/lib/colecciones";
 
 export const metadata: Metadata = {
   title: "Mi Catálogo",
@@ -136,7 +137,7 @@ async function obtenerLookAdmin(): Promise<AdminLook | null> {
 }
 
 export default async function AdminPage() {
-  const [filas, look, slides, tienda, fijadas] = await Promise.all([
+  const [filas, look, slides, tienda, fijadas, colecciones] = await Promise.all([
     prisma.productos.findMany({
       orderBy: { created_at: "desc" },
       include: { tallas: tallasSelect },
@@ -145,6 +146,7 @@ export default async function AdminPage() {
     listarSlidesAdmin(),
     obtenerTienda(),
     prisma.categorias_portada.findMany({ select: { nombre: true } }),
+    listarColecciones(),
   ]);
 
   const productos = filas.map(mapearProducto);
@@ -158,6 +160,13 @@ export default async function AdminPage() {
       slides={slides}
       tienda={tienda}
       categoriasFijadas={fijadas.map((f) => f.nombre)}
+      colecciones={colecciones}
+      prendasPorColeccion={Object.fromEntries(
+        colecciones.map((c) => [
+          c.id,
+          filas.filter((f) => f.coleccion_id === c.id).map((f) => f.id),
+        ])
+      )}
     />
   );
 }

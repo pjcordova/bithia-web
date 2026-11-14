@@ -161,16 +161,47 @@ export async function listarProductosVisibles(): Promise<ProductoPublico[]> {
   );
 }
 
+/**
+ * "Nuevos ingresos".
+ *
+ * Si hay una colección publicada, muestra sus prendas: es el sentido de
+ * agrupar una carga de mercadería, que al soltarla sea esa tanda la que se
+ * anuncia como nueva y no una mezcla con lo de quincenas anteriores. Sin
+ * colecciones publicadas se comporta como siempre, con las más recientes, así
+ * que el sitio funciona igual mientras nadie las use.
+ */
 export async function listarNovedades(limite = 4): Promise<ProductoPublico[]> {
   return leerSeguro(
     "listarNovedades",
     async () => {
+      const vigente = await prisma.colecciones.findFirst({
+        where: { publicada_at: { not: null } },
+        orderBy: { publicada_at: "desc" },
+        select: { id: true },
+      });
+
       const filas = await prisma.productos.findMany({
-        where: { visible_en_tienda: true },
+        where: {
+          visible_en_tienda: true,
+          ...(vigente ? { coleccion_id: vigente.id } : {}),
+        },
         select: seleccion,
         orderBy: { created_at: "desc" },
         take: limite,
       });
+
+      // Una colección publicada sin prendas visibles dejaría la sección vacía;
+      // mejor caer a las más recientes que mostrar un hueco en la portada.
+      if (vigente && filas.length === 0) {
+        const respaldo = await prisma.productos.findMany({
+          where: { visible_en_tienda: true },
+          select: seleccion,
+          orderBy: { created_at: "desc" },
+          take: limite,
+        });
+        return respaldo.map(serializar);
+      }
+
       return filas.map(serializar);
     },
     []
