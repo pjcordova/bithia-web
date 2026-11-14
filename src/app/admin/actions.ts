@@ -358,6 +358,37 @@ export async function fijarDestacados(ids: string[]): Promise<void> {
   refrescarVistas();
 }
 
+/**
+ * Fija la foto de un mosaico de categoría, o la quita para volver al
+ * comportamiento automático (heredar la de la prenda más reciente).
+ *
+ * El automático renovaba la portada sola con cada carga, pero bastaba una
+ * prenda mal clasificada para que ilustrara la categoría equivocada.
+ */
+export async function guardarFotoCategoria(
+  nombre: string,
+  imagenUrl: string | null
+): Promise<void> {
+  await exigirSesion();
+  if (!NOMBRES_CATEGORIA.includes(nombre)) return;
+
+  if (!imagenUrl) {
+    await prisma.categorias_portada.deleteMany({ where: { nombre } });
+    refrescarVistas();
+    return;
+  }
+
+  if (!imagenUrl.startsWith("https://res.cloudinary.com/")) return;
+
+  await prisma.categorias_portada.upsert({
+    where: { nombre },
+    create: { nombre, imagen_url: imagenUrl },
+    update: { imagen_url: imagenUrl },
+  });
+
+  refrescarVistas();
+}
+
 export type TiendaState = { error?: string; ok?: boolean };
 
 /**

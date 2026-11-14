@@ -383,6 +383,14 @@ export async function listarCategoriasDestacadas(): Promise<
         }
       }
 
+      // La foto fijada desde el panel manda sobre la heredada: si la dueña
+      // eligió una, no debe cambiarle sola al cargar mercadería nueva.
+      const fijadas = await prisma.categorias_portada.findMany();
+      for (const { nombre, imagen_url } of fijadas) {
+        const actual = porCategoria.get(nombre);
+        if (actual) actual.imagen = imagen_url;
+      }
+
       // Se respeta el orden fijo del catálogo, no el de la base.
       return NOMBRES_CATEGORIA.map((n) => porCategoria.get(n)).filter(
         (c): c is CategoriaDestacada => Boolean(c)

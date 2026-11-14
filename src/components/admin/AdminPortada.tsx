@@ -17,6 +17,7 @@ import {
 } from "@/components/admin/AdminSeccionShopTheLook";
 import { BannerTiendaVista } from "@/components/BannerTienda";
 import { SelectorPrendas } from "@/components/admin/SelectorPrendas";
+import { CategoriaFotoForm } from "@/components/admin/CategoriaFotoForm";
 import {
   fijarDestacados,
   fijarProtagonista,
@@ -40,6 +41,7 @@ type EspacioElegible =
  */
 export function AdminPortada({
   productos,
+  categoriasFijadas,
   categorias,
   slides,
   look,
@@ -70,8 +72,11 @@ export function AdminPortada({
   onEditarLook: (look: AdminLook) => void;
   onEditarTienda: (tienda: Tienda) => void;
   productos: ProductoAdmin[];
+  categoriasFijadas: string[];
 }) {
   const [eligiendo, setEligiendo] = useState<EspacioElegible | null>(null);
+  const [editandoCategoria, setEditandoCategoria] = useState<string | null>(null);
+  const fijadas = new Set(categoriasFijadas);
 
   const DATOS_SELECTOR: Record<
     string,
@@ -152,7 +157,11 @@ export function AdminPortada({
           comoSeLlena="Cada mosaico toma automáticamente la foto de la prenda más reciente de esa categoría. No se elige a mano: si subes una prenda nueva de Vestidos, su foto pasa a ilustrar “Vestidos”."
           aviso="Es el espacio que más sorprende, porque la prenda nunca se marcó para esto. Si una categoría muestra una foto que no corresponde, revisa que la prenda más nueva de esa categoría esté bien clasificada."
         >
-          <AdminSeccionCategorias categorias={categorias} />
+          <AdminSeccionCategorias
+            categorias={categorias}
+            fijadas={fijadas}
+            onEditarFoto={setEditandoCategoria}
+          />
         </Bloque>
 
         <Bloque
@@ -247,6 +256,17 @@ export function AdminPortada({
         Nota: una misma prenda puede ocupar varios de estos espacios a la vez.
         En <strong>Prendas</strong>, cada una dice en cuáles aparece.
       </p>
+
+      {editandoCategoria && (
+        <CategoriaFotoForm
+          nombre={editandoCategoria}
+          fotoActual={
+            categorias.find((c) => c.nombre === editandoCategoria)?.imagen ?? null
+          }
+          esFotoFijada={fijadas.has(editandoCategoria)}
+          onCerrar={() => setEditandoCategoria(null)}
+        />
+      )}
 
       {eligiendo && datos && (
         <SelectorPrendas

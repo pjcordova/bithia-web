@@ -136,7 +136,7 @@ async function obtenerLookAdmin(): Promise<AdminLook | null> {
 }
 
 export default async function AdminPage() {
-  const [filas, look, slides, tienda] = await Promise.all([
+  const [filas, look, slides, tienda, fijadas] = await Promise.all([
     prisma.productos.findMany({
       orderBy: { created_at: "desc" },
       include: { tallas: tallasSelect },
@@ -144,6 +144,7 @@ export default async function AdminPage() {
     obtenerLookAdmin(),
     listarSlidesAdmin(),
     obtenerTienda(),
+    prisma.categorias_portada.findMany({ select: { nombre: true } }),
   ]);
 
   const productos = filas.map(mapearProducto);
@@ -156,6 +157,7 @@ export default async function AdminPage() {
       look={look}
       slides={slides}
       tienda={tienda}
+      categoriasFijadas={fijadas.map((f) => f.nombre)}
     />
   );
 }

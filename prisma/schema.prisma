@@ -119,6 +119,20 @@ model tallas {
   @@index([producto_id])
 }
 
+// Foto de portada de cada mosaico de categoría.
+//
+// Sin una fila acá, el mosaico hereda la foto de la prenda más reciente de esa
+// categoría (ver listarCategoriasDestacadas). Eso renovaba la portada sola con
+// cada carga de mercadería, pero también hacía que una prenda mal clasificada
+// pasara a ilustrar la categoría equivocada — un vestido dando la cara a
+// "Pantalones"— sin que nadie lo hubiera elegido. Con una fila acá, la dueña
+// fija qué foto quiere y deja de depender del azar del inventario.
+model categorias_portada {
+  nombre     String   @id
+  imagen_url String
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+}
+
 // Datos del local físico: foto del stand, cómo se llama y dónde queda.
 // Antes vivían fijos en código (lib/contenido.ts) y aparecían repetidos en
 // media docena de archivos, así que corregir la dirección obligaba a un

@@ -42,12 +42,14 @@ export function AdminDashboard({
   look,
   slides,
   tienda,
+  categoriasFijadas,
 }: {
   productos: ProductoAdmin[];
   categorias: CategoriaDestacada[];
   look: AdminLook | null;
   slides: HeroSlide[];
   tienda: Tienda;
+  categoriasFijadas: string[];
 }) {
   // null = formulario cerrado; undefined = abierto en modo "agregar".
   const [editando, setEditando] = useState<ProductoAdmin | undefined | null>(
@@ -150,6 +152,7 @@ export function AdminDashboard({
         <AdminPortada
           productos={productos}
           categorias={categorias}
+          categoriasFijadas={categoriasFijadas}
           slides={slides}
           look={look}
           tienda={tienda}
